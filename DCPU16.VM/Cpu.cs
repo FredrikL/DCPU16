@@ -21,6 +21,7 @@ namespace DCPU16.VM
         }
 
         public ushort A { get { return this.a; }}
+        public ushort I { get { return this.i; } }
         public ushort ProgramCounter { get { return this.programCounter; } }
 
         public Cpu()
@@ -59,6 +60,25 @@ namespace DCPU16.VM
             {            
                 case 0x00:
                     return () => this.a;
+                case 0x01:
+                    return () => this.b;
+                case 0x02:
+                    return () => this.c;
+
+                case 0x03:
+                    return () => this.x;
+                case 0x04:
+                    return () => this.y;
+                case 0x05:
+                    return () => this.z;
+
+                case 0x06:
+                    return () => this.i;
+                case 0x07:
+                    return () => this.j;
+
+                case 0x08:
+                    return () => this.ram[this.a];
 
                 case 0x1e:
                     val = this.ram[this.programCounter++];
@@ -94,6 +114,10 @@ namespace DCPU16.VM
                     return v => this.i = v;
                 case 0x7:
                     return v => this.j = v;
+
+                case 0x16:
+                    val = this.ram[this.programCounter++];
+                    return v => this.ram[val + this.i] = v;
 
                 case 0x1c:
                     return v => this.programCounter = v;

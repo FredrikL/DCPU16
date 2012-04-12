@@ -9,6 +9,8 @@ namespace DCPU16.VM.Tests
     [TestFixture]
     public class CpuTests
     {
+        // based on example code in 1.1 spec
+
         private Cpu cpu;
 
         [SetUp]
@@ -79,7 +81,63 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.ProgramCounter, Is.EqualTo(0x000b));
+            // 0x000b since we read 0x000a and
+            // return from Run() since it's 0x0
+            Assert.That(this.cpu.ProgramCounter, Is.EqualTo(0x000b)); 
+        }
+
+        [Test]
+        public void ShouldSetITo10()
+        {
+            ushort[] program = { 0x7c01, 0x0030,
+                                 0x7de1, 0x1000, 0x0020,
+                                 0x7803, 0x1000,
+                                 0xc00d,
+                                 0x7dc1, 0x001a,
+                                 0xa861 };
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+            
+            Assert.That(this.cpu.I, Is.EqualTo(10));
+        }
+
+        [Test]
+        public void ShouldSetATo0x2000()
+        {
+            ushort[] program = { 0x7c01, 0x0030,
+                                 0x7de1, 0x1000, 0x0020,
+                                 0x7803, 0x1000,
+                                 0xc00d,
+                                 0x7dc1, 0x001a,
+                                 0xa861,
+                                 0x7c01, 0x2000};
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.A, Is.EqualTo(0x2000));
+        }
+
+        [Test]
+        public void ShouldBeAbleToSetOffsetWithValueFromI()
+        {
+            ushort[] program = { 0x7c01, 0x0030,
+                                 0x7de1, 0x1000, 0x0020,
+                                 0x7803, 0x1000,
+                                 0xc00d,
+                                 0x7dc1, 0x001a,
+                                 0xa861,
+                                 0x7c01, 0x2000,
+                                 0x2161, 0x2000};
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.A, Is.EqualTo(0x2000));
         }
     }
 }
