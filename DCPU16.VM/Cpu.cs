@@ -21,6 +21,7 @@ namespace DCPU16.VM
         }
 
         public ushort A { get { return this.a; }}
+        public ushort ProgramCounter { get { return this.programCounter; } }
 
         public Cpu()
         {
@@ -63,6 +64,41 @@ namespace DCPU16.VM
                     val = this.ram[this.programCounter++];
                     return () => val;
 
+                    // Hm..
+                case 0x20:
+                case 0x21:
+                case 0x22:
+                case 0x23:
+                case 0x24:
+                case 0x25:
+                case 0x26:
+                case 0x27:
+                case 0x28:
+                case 0x29:
+                case 0x2a:
+                case 0x2b:
+                case 0x2c:
+                case 0x2d:
+                case 0x2e:
+                case 0x2f:
+                case 0x30:
+                case 0x31:
+                case 0x32:
+                case 0x33:
+                case 0x34:
+                case 0x35:
+                case 0x36:
+                case 0x37:
+                case 0x38:
+                case 0x39:
+                case 0x3a:
+                case 0x3b:
+                case 0x3c:
+                case 0x3d:
+                case 0x3e:
+                case 0x3f:
+                    return () => (ushort)(value - 0x20);
+
                 default:
                     throw new NotImplementedException();
             }            
@@ -90,6 +126,9 @@ namespace DCPU16.VM
                 case 0x7:
                     return v => this.j = v;
 
+                case 0x1c:
+                    return v => this.programCounter = v;
+
                 case 0x1e:
                     val = this.ram[this.programCounter++];
                     return v => this.ram[val] = v;
@@ -99,16 +138,23 @@ namespace DCPU16.VM
             }
         }
 
+        private Instruction GetInstruction()
+        {
+            ushort word = ram[this.programCounter++];
+            byte instruction = (byte)(0xf & word);
+            byte a = (byte)(0x3f & (word >> 0x4));
+            byte b = (byte)(0x3f & (word >> 0xa));
+   
+            return new Instruction(){a = a, b=b, instruction = instruction};
+        }
+
         public void Run()
         {
             while (true)
             {
-                ushort word = ram[this.programCounter++];
-                byte instruction = (byte) (0xf & word);
-                byte a = (byte) (0x3f & (word >> 4));
-                byte b = (byte) (0x3f & (word >> 10));
+                var ins = GetInstruction();
 
-                switch (instruction)
+                switch (ins.instruction)
                 {
                     case 0x0:
                         Debug.WriteLine("Non-basic opcodes");
@@ -117,7 +163,7 @@ namespace DCPU16.VM
 
                     case 0x1:
                         Debug.WriteLine("SET");
-                        this.Set(a, b);
+                        this.Set(ins.a, ins.b);
                         break;
 
                     case 0x2:
@@ -126,7 +172,7 @@ namespace DCPU16.VM
 
                     case 0x3:
                         Debug.WriteLine("SUB");
-                        this.Sub(a, b);
+                        this.Sub(ins.a, ins.b);
                         break;
 
                     case 0x4:
@@ -167,6 +213,7 @@ namespace DCPU16.VM
 
                     case 0xd:
                         Debug.WriteLine("IFN");
+                        this.Ifn(ins.a, ins.b);
                         break;
 
                     case 0xe:
@@ -183,6 +230,35 @@ namespace DCPU16.VM
             }
         }
 
+        private bool SkipValue(byte value)
+        {
+            if ((
+                    (value >= 0x10)  && (value <= 0x17)
+                )
+                || value == 0x1e 
+                || value == 0x1f)
+                return true;
+            return false;
+        }
+
+        private void SkipNextInstruction()
+        {
+            var ins = GetInstruction();
+            // determine if we should advance programcounter 1 or 2 additional steps
+            if (SkipValue(ins.a)) this.programCounter++;
+            if (SkipValue(ins.b)) this.programCounter++;
+        }
+
+        private void Ifn(byte a, byte b)
+        {
+            var aVal = GetSource(a)();
+            var bVal = GetSource(b)();
+
+            if (aVal == bVal)
+                this.SkipNextInstruction();
+            //throw new NotImplementedException();
+        }
+
         private void Sub(byte a, byte b)
         {
             ushort aVal = GetSource(a)();
@@ -193,6 +269,7 @@ namespace DCPU16.VM
 
             var res = (ushort)(aVal - bVal);
             //todo overflow check
+
             dest(res);
         }
 
