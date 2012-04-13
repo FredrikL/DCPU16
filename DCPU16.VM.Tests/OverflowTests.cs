@@ -82,5 +82,34 @@ namespace DCPU16.VM.Tests
             Assert.That(this.cpu.A, Is.EqualTo(0x0000));
             Assert.That(this.cpu.Overflow, Is.EqualTo(0x2));
         }
+
+        [Test]
+        public void Mod()
+        {
+            ushort[] program = { 0x7c01, 0x0003,
+                                 0x7c11, 0x0002,
+                                 0x0406 }; // MUL A, B
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.A, Is.EqualTo(0x0001));
+        }
+
+        [Test]
+        public void ModByZero()
+        {
+            ushort[] program = { 0x7c01, 0x0003,
+                                 0x7c11, 0x0000,
+                                 0x0406 }; // MUL A, B
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.A, Is.EqualTo(0x0000));
+            Assert.That(this.cpu.Overflow, Is.EqualTo(0x0));
+        }
     }
 }

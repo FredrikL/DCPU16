@@ -248,6 +248,7 @@ namespace DCPU16.VM
 
                     case 0x6:
                         Debug.WriteLine("MOD");
+                        this.Mod(ins.a, ins.b);
                         break;
 
                     case 0x7:
@@ -291,6 +292,23 @@ namespace DCPU16.VM
                     default:
                         throw new NotImplementedException("Run");
                 }
+            }
+        }
+
+        private void Mod(byte a, byte b)
+        {
+            ushort aVal = GetSource(a)();
+            ushort bVal = GetSource(b)();
+            var dest = GetDestination(a);
+
+            if (bVal == 0)
+            {
+                this.overflow = 0;
+                dest(0);
+            }
+            else
+            {
+                dest((ushort) (aVal%bVal));
             }
         }
 
