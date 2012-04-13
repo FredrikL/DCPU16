@@ -361,15 +361,14 @@ namespace DCPU16.VM
         private void Shl(byte a, byte b)
         {
             var destination = GetDestination(a);
-            var source = GetSource(a);
-
-            ushort value = (ushort)(source() << b);
-            destination(value);
+            var source = GetSource(a)();
+            this.overflow = (ushort) (((source << b) >> 16) & 0xffff);
+            destination((ushort)(source << b));
         }
 
         private void Push(ushort value)
         {
-            this.ram[--this.stackPointer] = this.programCounter;
+            this.ram[--this.stackPointer] = value;
         }
 
         private void Jsr(byte a)
