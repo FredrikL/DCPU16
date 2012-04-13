@@ -267,7 +267,7 @@ namespace DCPU16.VM
                         break;
 
                     default:
-                        throw new NotImplementedException();
+                        throw new NotImplementedException("Run");
                 }
             }
         }
