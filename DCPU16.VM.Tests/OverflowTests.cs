@@ -139,5 +139,33 @@ namespace DCPU16.VM.Tests
             Assert.That(this.cpu.A, Is.EqualTo(0xfff0));
             Assert.That(this.cpu.Overflow, Is.EqualTo(0x000f));
         }
+
+        [Test]
+        public void Shr()
+        {
+            ushort[] program = { 0x7c01, 0x0040,
+                                 0x9008 };
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.A, Is.EqualTo(0x0004));
+            Assert.That(this.cpu.Overflow, Is.EqualTo(0x0));
+        }
+
+        [Test]
+        public void ShrOverFlow()
+        {
+            ushort[] program = { 0x7c01, 0x000f,
+                                 0x9008 };
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.A, Is.EqualTo(0x0000));
+            Assert.That(this.cpu.Overflow, Is.EqualTo(0xf000));
+        }
     }
 }

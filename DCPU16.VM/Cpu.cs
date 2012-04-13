@@ -258,6 +258,7 @@ namespace DCPU16.VM
 
                     case 0x8:
                         Debug.WriteLine("SHR");
+                        this.Shr(ins.a, ins.b);
                         break;
 
                     case 0x9:
@@ -293,6 +294,14 @@ namespace DCPU16.VM
                         throw new NotImplementedException("Run");
                 }
             }
+        }
+
+        private void Shr(byte a, byte b)
+        {
+            var destination = GetDestination(a);
+            var source = GetSource(a)();
+            this.overflow = (ushort) (((source << 16) >> b) & 0xffff);
+            destination((ushort)(source >> b));
         }
 
         private void Mod(byte a, byte b)
