@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace DCPU16.VM.Tests
 {
     [TestFixture]
-    public class CpuTests
+    public class CpuSpec1_1Tests
     {
         // based on example code in 1.1 spec
 

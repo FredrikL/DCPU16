@@ -58,6 +58,25 @@ namespace DCPU16.VM
             program.CopyTo(ram, 0);
         }
 
+        private bool SkipValue(byte value)
+        {
+            if ((
+                    (value >= 0x10) && (value <= 0x17)
+                )
+                || value == 0x1e
+                || value == 0x1f)
+                return true;
+            return false;
+        }
+
+        private void SkipNextInstruction()
+        {
+            var ins = GetInstruction();
+            // determine if we should advance programcounter 1 or 2 additional steps
+            if (SkipValue(ins.a)) this.programCounter++;
+            if (SkipValue(ins.b)) this.programCounter++;
+        }
+
         private Func<ushort> GetSource(byte value)
         {
             ushort val;
@@ -209,6 +228,7 @@ namespace DCPU16.VM
 
                     case 0x2:
                         Debug.WriteLine("ADD");
+                        this.Add(ins.a, ins.b);
                         break;
 
                     case 0x3:
@@ -272,6 +292,21 @@ namespace DCPU16.VM
             }
         }
 
+        private void Add(byte a, byte b)
+        {
+            ushort aVal = GetSource(a)();
+
+            ushort bVal = GetSource(b)();
+
+            var dest = GetDestination(a);
+
+            this.overflow = (ushort)((aVal + bVal) > 0xffff ? 0x0001 : 0x0000);
+
+            var res = (ushort)(aVal - bVal);
+
+            dest(res);
+        }
+
         private void Shl(byte a, byte b)
         {
             var destination = GetDestination(a);
@@ -292,26 +327,7 @@ namespace DCPU16.VM
             this.Push(this.programCounter);            
             this.programCounter = value;
         }
-
-        private bool SkipValue(byte value)
-        {
-            if ((
-                    (value >= 0x10)  && (value <= 0x17)
-                )
-                || value == 0x1e 
-                || value == 0x1f)
-                return true;
-            return false;
-        }
-
-        private void SkipNextInstruction()
-        {
-            var ins = GetInstruction();
-            // determine if we should advance programcounter 1 or 2 additional steps
-            if (SkipValue(ins.a)) this.programCounter++;
-            if (SkipValue(ins.b)) this.programCounter++;
-        }
-
+       
         private void Ifn(byte a, byte b)
         {
             var aVal = GetSource(a)();
@@ -329,8 +345,9 @@ namespace DCPU16.VM
 
             var dest = GetDestination(a);
 
+            this.overflow = (ushort)(aVal < bVal ? 0xffff : 0x0000);
+
             var res = (ushort)(aVal - bVal);
-            //todo overflow check
 
             dest(res);
         }
