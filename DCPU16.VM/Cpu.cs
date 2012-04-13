@@ -89,6 +89,9 @@ namespace DCPU16.VM
                 case 0x08:
                     return () => this.ram[this.a];
 
+                case 0x18:
+                    return () => this.ram[this.stackPointer++];
+
                 case 0x1e:
                     val = this.ram[this.programCounter++];
                     return () => this.ram[val];
@@ -98,7 +101,7 @@ namespace DCPU16.VM
                     return () => val;             
 
                 default:
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("GetSource");
             }            
         }
 
@@ -157,7 +160,7 @@ namespace DCPU16.VM
                     return v => this.ram[val] = v;
 
                 default:
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("GetDestination");
             }
         }
 
@@ -280,7 +283,7 @@ namespace DCPU16.VM
 
         private void Push(ushort value)
         {
-            this.ram[this.stackPointer--] = this.programCounter;
+            this.ram[--this.stackPointer] = this.programCounter;
         }
 
         private void Jsr(byte a)
