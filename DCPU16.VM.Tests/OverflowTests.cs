@@ -38,5 +38,49 @@ namespace DCPU16.VM.Tests
 
             Assert.That(this.cpu.Overflow, Is.EqualTo(0x0001));
         }
+
+        [Test]
+        public void Mul()
+        {
+            ushort[] program = { 0x7c01, 0xffff,
+                                 0x7c11, 0xffff,
+                                 0x0404 }; // MUL A, B
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.Overflow, Is.EqualTo(0xfffe));
+        }
+
+        [Test]
+        public void DivByZero()
+        {
+            ushort[] program = { 0x7c01, 0xffff,
+                                 0x7c11, 0x0000,
+                                 0x0405 }; // MUL A, B
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.Overflow, Is.EqualTo(0x0));
+            Assert.That(this.cpu.A, Is.EqualTo(0x0));
+        }
+
+        [Test]
+        public void Div()
+        {
+            ushort[] program = { 0x7c01, 0x0002,
+                                 0x7c11, 0xffff,
+                                 0x0405 }; // MUL A, B
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.A, Is.EqualTo(0x0000));
+            Assert.That(this.cpu.Overflow, Is.EqualTo(0x2));
+        }
     }
 }

@@ -238,10 +238,12 @@ namespace DCPU16.VM
 
                     case 0x4:
                         Debug.WriteLine("MUL");
+                        this.Mul(ins.a, ins.b);
                         break;
 
                     case 0x5:
                         Debug.WriteLine("DIV");
+                        this.Div(ins.a, ins.b);
                         break;
 
                     case 0x6:
@@ -290,6 +292,37 @@ namespace DCPU16.VM
                         throw new NotImplementedException("Run");
                 }
             }
+        }
+
+        private void Div(byte a, byte b)
+        {
+            ushort aVal = GetSource(a)();
+
+            ushort bVal = GetSource(b)();
+            var dest = GetDestination(a);
+            if (bVal == 0)
+            {
+                this.overflow = 0;
+                dest(0);
+            }
+            else
+            {                
+                this.overflow = (ushort) (((aVal << 16) / bVal) & 0xffff);
+
+                dest((ushort)(aVal / bVal));
+            }
+        }
+
+        private void Mul(byte a, byte b)
+        {
+            ushort aVal = GetSource(a)();
+
+            ushort bVal = GetSource(b)();
+
+            var dest = GetDestination(a);
+            this.overflow = (ushort)(((aVal * bVal) >> 16) & 0xffff);
+
+            dest((ushort)(aVal*bVal));
         }
 
         private void Add(byte a, byte b)
