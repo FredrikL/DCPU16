@@ -20,9 +20,18 @@ namespace DCPU16.VM
             get { return this.ram; }
         }
 
-        public ushort A { get { return this.a; }}
+        public ushort A { get { return this.a; } }
+        public ushort B { get { return this.b; } }
+        public ushort C { get { return this.c; } }
+        public ushort X { get { return this.x; } }
+        public ushort Y { get { return this.y; } }
+        public ushort Z { get { return this.z; } }
         public ushort I { get { return this.i; } }
+        public ushort J { get { return this.j; } }
+
         public ushort ProgramCounter { get { return this.programCounter; } }
+        public ushort StackPointer { get { return this.stackPointer; } }
+        public ushort Overflow { get { return this.overflow; } }
 
         public Cpu()
         {
@@ -172,11 +181,22 @@ namespace DCPU16.VM
                 {
                     case 0x0:
                         Debug.WriteLine("Non-basic opcodes");
-                        #if DEBUG
-                        // for testing, remove once full implementation is done
-                        this.programCounter -= 1;
-                        return; //escape
-                        #endif                        
+                        switch(ins.a)
+                        {
+                            case 0x01:
+                                Debug.WriteLine("JSR");
+                                this.Jsr(ins.b);
+                                break;
+                            default:
+#if DEBUG
+                                // for testing, remove once full implementation is done
+                                this.programCounter -= 1;
+                                return;
+#else
+                                break;
+#endif 
+
+                        }                                              
                         break;
 
                     case 0x1:
@@ -207,6 +227,7 @@ namespace DCPU16.VM
 
                     case 0x7:
                         Debug.WriteLine("SHL");
+                        this.Shl(ins.a, ins.b);
                         break;
 
                     case 0x8:
@@ -246,6 +267,27 @@ namespace DCPU16.VM
                         throw new NotImplementedException();
                 }
             }
+        }
+
+        private void Shl(byte a, byte b)
+        {
+            var destination = GetDestination(a);
+            var source = GetSource(a);
+
+            ushort value = (ushort)(source() << b);
+            destination(value);
+        }
+
+        private void Push(ushort value)
+        {
+            this.ram[this.stackPointer--] = this.programCounter;
+        }
+
+        private void Jsr(byte a)
+        {
+            var value = GetSource(a)();
+            this.Push(this.programCounter);            
+            this.programCounter = value;
         }
 
         private bool SkipValue(byte value)
