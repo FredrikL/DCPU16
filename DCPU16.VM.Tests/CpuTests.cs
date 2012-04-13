@@ -124,6 +124,30 @@ namespace DCPU16.VM.Tests
         [Test]
         public void ShouldBeAbleToSetOffsetWithValueFromI()
         {
+            this.cpu.Ram[0x2000] = 0xff;
+            this.cpu.Ram[0x2000 + 10] = 0x00;
+
+            ushort[] program = {
+                                   0x7c01, 0x0030,
+                                   0x7de1, 0x1000, 0x0020,
+                                   0x7803, 0x1000,
+                                   0xc00d,
+                                   0x7dc1, 0x001a,
+                                   0xa861,
+                                   0x7c01, 0x2000,
+                                   0x2161, 0x2000
+                               };
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.Ram[0x2000 + 10], Is.EqualTo(0xff));
+        }
+
+        [Test]
+        public void SubI()
+        {
             ushort[] program = { 0x7c01, 0x0030,
                                  0x7de1, 0x1000, 0x0020,
                                  0x7803, 0x1000,
@@ -131,13 +155,15 @@ namespace DCPU16.VM.Tests
                                  0x7dc1, 0x001a,
                                  0xa861,
                                  0x7c01, 0x2000,
-                                 0x2161, 0x2000};
+                                 0x2161, 0x2000,
+                                 0x8463 };
 
             this.cpu.LoadProgram(program);
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.A, Is.EqualTo(0x2000));
+            Assert.That(this.cpu.I, Is.EqualTo(9));
         }
+    
     }
 }

@@ -115,9 +115,30 @@ namespace DCPU16.VM
                 case 0x7:
                     return v => this.j = v;
 
+                case 0x10:
+                    val = this.ram[this.programCounter++];
+                    return v => this.ram[val + this.a] = v;
+                case 0x11:
+                    val = this.ram[this.programCounter++];
+                    return v => this.ram[val + this.b] = v;
+                case 0x12:
+                    val = this.ram[this.programCounter++];
+                    return v => this.ram[val + this.c] = v;
+                case 0x13:
+                    val = this.ram[this.programCounter++];
+                    return v => this.ram[val + this.x] = v;
+                case 0x14:
+                    val = this.ram[this.programCounter++];
+                    return v => this.ram[val + this.y] = v;
+                case 0x15:
+                    val = this.ram[this.programCounter++];
+                    return v => this.ram[val + this.z] = v;
                 case 0x16:
                     val = this.ram[this.programCounter++];
                     return v => this.ram[val + this.i] = v;
+                case 0x17:
+                    val = this.ram[this.programCounter++];
+                    return v => this.ram[val + this.j] = v;
 
                 case 0x1c:
                     return v => this.programCounter = v;
