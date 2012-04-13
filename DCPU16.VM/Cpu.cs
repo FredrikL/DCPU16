@@ -159,7 +159,7 @@ namespace DCPU16.VM
             byte a = (byte)(0x3f & (word >> 0x4));
             byte b = (byte)(0x3f & (word >> 0xa));
    
-            return new Instruction(){a = a, b=b, instruction = instruction};
+            return new Instruction(){a = a, b=b, instruction = instruction, raw = word};
         }
 
         public void Run()
@@ -172,7 +172,11 @@ namespace DCPU16.VM
                 {
                     case 0x0:
                         Debug.WriteLine("Non-basic opcodes");
+                        #if DEBUG
+                        // for testing, remove once full implementation is done
+                        this.programCounter -= 1;
                         return; //escape
+                        #endif                        
                         break;
 
                     case 0x1:

@@ -81,9 +81,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            // 0x000b since we read 0x000a and
-            // return from Run() since it's 0x0
-            Assert.That(this.cpu.ProgramCounter, Is.EqualTo(0x000b)); 
+            Assert.That(this.cpu.ProgramCounter, Is.EqualTo(0x000a)); 
         }
 
         [Test]
@@ -165,5 +163,28 @@ namespace DCPU16.VM.Tests
             Assert.That(this.cpu.I, Is.EqualTo(9));
         }
     
+
+        [Test]
+        public void DoLoop()
+        {
+             ushort[] program = { 0x7c01, 0x0030,
+                                 0x7de1, 0x1000, 0x0020,
+                                 0x7803, 0x1000,
+                                 0xc00d,
+                                 0x7dc1, 0x001a,
+                                 0xa861,
+                                 0x7c01, 0x2000,
+                                 0x2161, 0x2000,
+                                 0x8463,
+                                 0x806d,
+                                 0x7dc1, 0x000d };
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+            
+            Assert.That(this.cpu.I, Is.EqualTo(0x0));
+            Assert.That(this.cpu.ProgramCounter, Is.EqualTo(0x13));
+        }
     }
 }
