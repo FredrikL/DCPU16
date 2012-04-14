@@ -32,7 +32,7 @@ namespace DCPU16.VM.Tests
         {
             ushort[] program = { 0x7c01, 0x0002,
                                  0x7c11, 0x0001,
-                                 0x0403B };
+                                 0x0403 };
 
             this.cpu.LoadProgram(program);
 
