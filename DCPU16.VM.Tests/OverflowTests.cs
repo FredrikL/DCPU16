@@ -2,6 +2,7 @@ using NUnit.Framework;
 
 namespace DCPU16.VM.Tests
 {
+    [TestFixture]
     public class OverflowTests
     {
         private Cpu cpu;

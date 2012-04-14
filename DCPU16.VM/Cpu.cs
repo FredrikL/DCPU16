@@ -362,7 +362,7 @@ namespace DCPU16.VM
 
             this.overflow = (ushort)((aVal + bVal) > 0xffff ? 0x0001 : 0x0000);
 
-            var res = (ushort)(aVal - bVal);
+            var res = (ushort)(aVal + bVal);
 
             dest(res);
         }
