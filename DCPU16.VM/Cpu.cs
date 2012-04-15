@@ -263,14 +263,17 @@ namespace DCPU16.VM
 
                     case 0x9:
                         Debug.WriteLine("AND");
+                        this.And(ins.a, ins.b);
                         break;
 
                     case 0xa:
                         Debug.WriteLine("BOR");
+                        this.Bor(ins.a, ins.b);
                         break;
 
                     case 0xb:
                         Debug.WriteLine("XOR");
+                        this.Xor(ins.a, ins.b);
                         break;
 
                     case 0xc:
@@ -294,6 +297,33 @@ namespace DCPU16.VM
                         throw new NotImplementedException("Run");
                 }
             }
+        }
+
+        private void Xor(byte a, byte b)
+        {
+            var aVal = GetSource(a)();
+            var bVal = GetSource(b)();
+            var dest = GetDestination(a);
+
+            dest((ushort)(aVal ^ bVal));
+        }
+
+        private void Bor(byte a, byte b)
+        {
+            var aVal = GetSource(a)();
+            var bVal = GetSource(b)();
+            var dest = GetDestination(a);
+
+            dest((ushort)(aVal | bVal));
+        }
+
+        private void And(byte a, byte b)
+        {
+            var aVal = GetSource(a)();
+            var bVal = GetSource(b)();
+            var dest = GetDestination(a);
+
+            dest((ushort)(aVal & bVal));
         }
 
         private void Shr(byte a, byte b)

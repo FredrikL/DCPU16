@@ -110,5 +110,47 @@ namespace DCPU16.VM.Tests
             Assert.That(this.cpu.A, Is.EqualTo(0x0004));
             Assert.That(this.cpu.Overflow, Is.EqualTo(0x0));
         }
+
+        [Test]
+        public void And()
+        {
+            ushort[] program = { 0x7c01, 0x0003,
+                                 0x7c11, 0x0002,
+                                 0x0409 };
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.A, Is.EqualTo(0x2));
+        }
+
+        [Test]
+        public void Bor()
+        {
+            ushort[] program = { 0x7c21, 0x0001,
+                                 0x7c71, 0x0002,
+                                 0x1c2a }; // BOR C, J
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.C, Is.EqualTo(0x3));
+        }
+
+        [Test]
+        public void Xor()
+        {
+            ushort[] program = { 0x7c41, 0x0001,
+                                 0x7c51, 0x0002,
+                                 0x144b }; // BOR C, J
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.Y, Is.EqualTo(0x3));
+        }
     }
 }
