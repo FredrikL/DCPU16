@@ -13,8 +13,10 @@ namespace DCPU16.VM
         private ushort programCounter = 0x0;
         private ushort stackPointer = 0xffff;
         private ushort overflow = 0x0;
-        
-        
+
+        private bool skipNext = false;
+        private bool programCounterManupulated = false;
+
         public ushort[] Ram
         {
             get { return this.ram; }
@@ -156,7 +158,7 @@ namespace DCPU16.VM
                     return () => this.ram[this.stackPointer++];
 
                 case 0x1e:
-                    val = this.ram[this.programCounter++];
+                    val = this.ram[this.programCounter+offset];
                     return () => this.ram[val];
 
                 case 0x1f:
@@ -216,6 +218,7 @@ namespace DCPU16.VM
                     return v => this.ram[val + this.j] = v;
 
                 case 0x1c:
+                    this.programCounterManupulated = true;
                     return v => this.programCounter = v;
 
                 case 0x1e:
@@ -240,7 +243,13 @@ namespace DCPU16.VM
         public void Run()
         {
             while (true)
-            {
+            {                
+                if(skipNext)
+                {
+                    this.SkipNextInstruction();
+                    this.skipNext = false;
+                }
+
                 var ins = GetInstruction();
 
                 switch (ins.instruction)
@@ -325,37 +334,59 @@ namespace DCPU16.VM
                     default:
                         throw new NotImplementedException("Run");
                 }
-                this.programCounter++;
-                if (SkipValue(ins.a)) this.programCounter++;
-                if (SkipValue(ins.b)) this.programCounter++;
+                if (!this.programCounterManupulated)
+                {
+                    // in case we're using jsr don't increment programcounter here
+                    // it's at the correct position
+                    this.programCounter++;
+                    if (SkipValue(ins.a)) this.programCounter++;
+                    if (SkipValue(ins.b)) this.programCounter++;
+                }
+                else
+                    this.programCounterManupulated = false;
             }
         }
 
         private void Ifb(byte a, byte b)
         {
-            var aVal = GetSource(a)();
-            var bVal = GetSource(b)();
+            ushort skipcount = 0;
+            if (SkipValue(a))
+                skipcount++;
+            var aVal = GetSource(a, skipcount)();
+            if (SkipValue(b))
+                skipcount++;
+            var bVal = GetSource(b, skipcount)();
 
             if ((aVal & bVal) == 0)
-                this.SkipNextInstruction();
+                this.skipNext = true;
         }
 
         private void Ifg(byte a, byte b)
         {
-            var aVal = GetSource(a)();
-            var bVal = GetSource(b)();
+            ushort skipcount = 0;
+            if (SkipValue(a))
+                skipcount++;
+            var aVal = GetSource(a, skipcount)();
+            if (SkipValue(b))
+                skipcount++;
+            var bVal = GetSource(b, skipcount)();
 
             if (aVal <= bVal)
-                this.SkipNextInstruction();
+                this.skipNext = true;
         }
 
         private void Ife(byte a, byte b)
         {
-            var aVal = GetSource(a)();
-            var bVal = GetSource(b)();
+            ushort skipcount = 0;
+            if (SkipValue(a))
+                skipcount++;
+            var aVal = GetSource(a, skipcount)();
+            if (SkipValue(b))
+                skipcount++;
+            var bVal = GetSource(b, skipcount)();
 
             if (aVal != bVal)
-                this.SkipNextInstruction();
+                this.skipNext = true;
         }
 
         private void Xor(byte a, byte b)
@@ -490,27 +521,39 @@ namespace DCPU16.VM
 
         private void Jsr(byte a)
         {
-            var value = GetSource(a)();
-            this.Push(this.programCounter);            
+            ushort skipcount = 0;
+            if (SkipValue(a))
+                skipcount++;
+            var value = GetSource(a, skipcount)();
+            this.Push((ushort)(this.programCounter+  skipcount+1));
             this.programCounter = value;
+            this.programCounterManupulated = true;
         }
        
         private void Ifn(byte a, byte b)
         {
-            var aVal = GetSource(a)();
-            var bVal = GetSource(b)();
+            ushort skipcount = 0;
+            if (SkipValue(a))
+                skipcount++;
+            var aVal = GetSource(a, skipcount)();
+            if (SkipValue(b))
+                skipcount++;
+            var bVal = GetSource(b,skipcount)();
 
             if (aVal == bVal)
-                this.SkipNextInstruction();
+                this.skipNext = true;
         }
 
         private void Sub(byte a, byte b)
         {
-            ushort aVal = GetSource(a)();
-
-            ushort bVal = GetSource(b)();
-
-            var dest = GetDestination(a);
+            ushort skipcount = 0;
+            if (SkipValue(a))
+                skipcount++;
+            ushort aVal = GetSource(a, skipcount)();
+            var dest = GetDestination(a, skipcount);
+            if (SkipValue(b))
+                skipcount++;
+            ushort bVal = GetSource(b, skipcount)();
 
             this.overflow = (ushort)(aVal < bVal ? 0xffff : 0x0000);
 
