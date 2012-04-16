@@ -44,7 +44,7 @@ namespace DCPU16.VM.Tests
         [Test]
         public void Mul()
         {
-            ushort[] program = { 0x7c01, 0x0002,
+            ushort[] program = { 0x7c01, 0x0003,
                                  0x7c11, 0x0002,
                                  0x0404 };
 
@@ -52,7 +52,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.A, Is.EqualTo(0x04));
+            Assert.That(this.cpu.A, Is.EqualTo(0x06));
         }
 
         [Test]

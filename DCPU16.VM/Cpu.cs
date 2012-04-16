@@ -411,76 +411,47 @@ namespace DCPU16.VM
             var dest = GetDestination(a);            
             dest((ushort)(values.Item1 & values.Item2));
         }
-
-        private void Shr(byte a, byte b)
-        {
-            var destination = GetDestination(a);
-            var source = GetSource(a)();
-            this.overflow = (ushort) (((source << 16) >> b) & 0xffff);
-            destination((ushort)(source >> b));
-        }
-
+      
         private void Mod(byte a, byte b)
         {
-            ushort aVal = GetSource(a)();
-            ushort bVal = GetSource(b)();
+            var values = ResolveSources(a, b);
             var dest = GetDestination(a);
 
-            if (bVal == 0)
-            {
-                this.overflow = 0;
-                dest(0);
-            }
+            if(values.Item2 == 0)               
+                dest(this.overflow = 0);
             else
-            {
-                dest((ushort) (aVal%bVal));
-            }
+                dest((ushort) (values.Item1 % values.Item2));
         }
 
         private void Div(byte a, byte b)
         {
-            ushort aVal = GetSource(a)();
-
-            ushort bVal = GetSource(b)();
+            var values = ResolveSources(a, b);
             var dest = GetDestination(a);
-            if (bVal == 0)
-            {
-                this.overflow = 0;
-                dest(0);
-            }
-            else
-            {                
-                this.overflow = (ushort) (((aVal << 16) / bVal) & 0xffff);
 
-                dest((ushort)(aVal / bVal));
+            if (values.Item2 == 0)
+                dest(this.overflow = 0);
+            else
+            {
+                this.overflow = (ushort)(((values.Item1 << 16) / values.Item2) & 0xffff);
+                dest((ushort)(values.Item1 / values.Item2));
             }
         }
 
         private void Mul(byte a, byte b)
         {
-            ushort aVal = GetSource(a)();
-
-            ushort bVal = GetSource(b)();
-
+            var values = ResolveSources(a, b);
             var dest = GetDestination(a);
-            this.overflow = (ushort)(((aVal * bVal) >> 16) & 0xffff);
-
-            dest((ushort)(aVal*bVal));
+            this.overflow = (ushort)(((values.Item1 * values.Item2) >> 16) & 0xffff);
+            dest((ushort)(values.Item1 * values.Item2));
         }
 
         private void Add(byte a, byte b)
         {
-            ushort aVal = GetSource(a)();
-
-            ushort bVal = GetSource(b)();
-
+            var values = ResolveSources(a, b);
             var dest = GetDestination(a);
 
-            this.overflow = (ushort)((aVal + bVal) > 0xffff ? 0x0001 : 0x0000);
-
-            var res = (ushort)(aVal + bVal);
-
-            dest(res);
+            this.overflow = (ushort)((values.Item1 + values.Item2) > 0xffff ? 0x0001 : 0x0000);
+            dest((ushort)(values.Item1 + values.Item2));
         }
 
         private void Shl(byte a, byte b)
@@ -489,6 +460,14 @@ namespace DCPU16.VM
             var source = GetSource(a)();
             this.overflow = (ushort) (((source << b) >> 16) & 0xffff);
             destination((ushort)(source << b));
+        }
+
+        private void Shr(byte a, byte b)
+        {
+            var destination = GetDestination(a);
+            var source = GetSource(a)();
+            this.overflow = (ushort)(((source << 16) >> b) & 0xffff);
+            destination((ushort)(source >> b));
         }
 
         private void Push(ushort value)
@@ -509,32 +488,22 @@ namespace DCPU16.VM
 
         private void Sub(byte a, byte b)
         {
-            ushort skipcount = 0;
-            if (SkipValue(a))
-                skipcount++;
-            ushort aVal = GetSource(a, skipcount)();
+            var values = ResolveSources(a, b);
             var dest = GetDestination(a);
-            if (SkipValue(b))
-                skipcount++;
-            ushort bVal = GetSource(b, skipcount)();
-
-            this.overflow = (ushort)(aVal < bVal ? 0xffff : 0x0000);
-
-            var res = (ushort)(aVal - bVal);
-
-            dest(res);
+            this.overflow = (ushort)(values.Item1 < values.Item2 ? 0xffff : 0x0000);            
+            dest((ushort)(values.Item1 - values.Item2));
         }
 
         private void Set(byte a, byte b)
         {
             ushort skipcount = 0;
             if (SkipValue(a))
-                skipcount++;
-            var dest = GetDestination(a);
+                skipcount++;            
             if (SkipValue(b))
                 skipcount++;
             var source = GetSource(b, skipcount);
 
+            var dest = GetDestination(a);
             dest(source());
         }
     }
