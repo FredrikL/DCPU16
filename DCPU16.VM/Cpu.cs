@@ -29,6 +29,11 @@ namespace DCPU16.VM
         public ushort I { get { return this.i; } }
         public ushort J { get { return this.j; } }
 
+        public ushort[] Registers
+        {
+            get { return new ushort[] {a, b, c, x, y, z, i, j}; }
+        }
+
         public ushort ProgramCounter { get { return this.programCounter; } }
         public ushort StackPointer { get { return this.stackPointer; } }
         public ushort Overflow { get { return this.overflow; } }
@@ -93,14 +98,12 @@ namespace DCPU16.VM
                     return () => this.b;
                 case 0x02:
                     return () => this.c;
-
                 case 0x03:
                     return () => this.x;
                 case 0x04:
                     return () => this.y;
                 case 0x05:
                     return () => this.z;
-
                 case 0x06:
                     return () => this.i;
                 case 0x07:
@@ -108,6 +111,20 @@ namespace DCPU16.VM
 
                 case 0x08:
                     return () => this.ram[this.a];
+                case 0x09:
+                    return () => this.ram[this.b];
+                case 0x0a:
+                    return () => this.ram[this.c];
+                case 0x0b:
+                    return () => this.ram[this.x];
+                case 0x0c:
+                    return () => this.ram[this.y];
+                case 0x0d:
+                    return () => this.ram[this.z];
+                case 0x0e:
+                    return () => this.ram[this.i];
+                case 0x0f:
+                    return () => this.ram[this.j];
 
                 case 0x18:
                     return () => this.ram[this.stackPointer++];

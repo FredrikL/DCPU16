@@ -47,5 +47,23 @@ namespace DCPU16.VM.Tests
                 Assert.That(this.cpu.A, Is.EqualTo(i - 0x20));
             }
         }
+
+        [Test]
+        public void RegisterPointerValues()
+        {
+            for (int i = 0x0; i < 0x8; i++)
+            {
+                ushort[] program = {
+                                       (ushort)(0x7c01 + (i << 4)), 0x1000,
+                                       0x7de1, 0x1000, 0xdead,
+                                       (ushort) (0x2001 + (i << 4) + (i << 10))
+                                   };
+
+                this.cpu.LoadProgram(program);
+                this.cpu.Run();
+
+                Assert.That(this.cpu.Registers[i], Is.EqualTo(0xdead));
+            }
+        }
     }
 }
