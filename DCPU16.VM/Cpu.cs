@@ -55,6 +55,7 @@ namespace DCPU16.VM
 
         public void LoadProgram(ushort[] program)
         {
+            this.Reset();
             program.CopyTo(ram, 0);
         }
 
@@ -202,11 +203,9 @@ namespace DCPU16.VM
                 switch (ins.instruction)
                 {
                     case 0x0:
-                        Debug.WriteLine("Non-basic opcodes");
                         switch(ins.a)
                         {
                             case 0x01:
-                                Debug.WriteLine("JSR");
                                 this.Jsr(ins.b);
                                 break;
                             default:
@@ -222,77 +221,62 @@ namespace DCPU16.VM
                         break;
 
                     case 0x1:
-                        Debug.WriteLine("SET");
                         this.Set(ins.a, ins.b);
                         break;
 
                     case 0x2:
-                        Debug.WriteLine("ADD");
                         this.Add(ins.a, ins.b);
                         break;
 
                     case 0x3:
-                        Debug.WriteLine("SUB");
                         this.Sub(ins.a, ins.b);
                         break;
 
                     case 0x4:
-                        Debug.WriteLine("MUL");
                         this.Mul(ins.a, ins.b);
                         break;
 
                     case 0x5:
-                        Debug.WriteLine("DIV");
                         this.Div(ins.a, ins.b);
                         break;
 
                     case 0x6:
-                        Debug.WriteLine("MOD");
                         this.Mod(ins.a, ins.b);
                         break;
 
                     case 0x7:
-                        Debug.WriteLine("SHL");
                         this.Shl(ins.a, ins.b);
                         break;
 
                     case 0x8:
-                        Debug.WriteLine("SHR");
                         this.Shr(ins.a, ins.b);
                         break;
 
                     case 0x9:
-                        Debug.WriteLine("AND");
                         this.And(ins.a, ins.b);
                         break;
 
                     case 0xa:
-                        Debug.WriteLine("BOR");
                         this.Bor(ins.a, ins.b);
                         break;
 
                     case 0xb:
-                        Debug.WriteLine("XOR");
                         this.Xor(ins.a, ins.b);
                         break;
 
                     case 0xc:
-                        Debug.WriteLine("IFE");
                         this.Ife(ins.a, ins.b);
                         break;
 
                     case 0xd:
-                        Debug.WriteLine("IFN");
                         this.Ifn(ins.a, ins.b);
                         break;
 
                     case 0xe:
-                        Debug.WriteLine("IFG");
                         this.Ifg(ins.a, ins.b);
                         break;
 
                     case 0xf:
-                        Debug.WriteLine("IFB");
                         this.Ifb(ins.a, ins.b);
                         break;
 
