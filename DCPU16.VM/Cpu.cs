@@ -170,9 +170,12 @@ namespace DCPU16.VM
             }            
         }
 
-        private Action<ushort> GetDestination(byte value, int offset = 0)
+        private Action<ushort> GetDestination(byte value)
         {
             ushort val;
+            ushort offset = 0;
+            if (SkipValue(value))
+                offset = 1;
             switch(value)
             {
                 case 0x0:
@@ -347,7 +350,7 @@ namespace DCPU16.VM
             }
         }
 
-        private void Ifb(byte a, byte b)
+        private Tuple<ushort, ushort> ResolveSources(byte a, byte b)
         {
             ushort skipcount = 0;
             if (SkipValue(a))
@@ -357,82 +360,56 @@ namespace DCPU16.VM
                 skipcount++;
             var bVal = GetSource(b, skipcount)();
 
-            if ((aVal & bVal) == 0)
+            return Tuple.Create(aVal, bVal);
+        }
+
+        private void Ifb(byte a, byte b)
+        {
+            var values = ResolveSources(a, b);
+            if ((values.Item1 & values.Item2) == 0)
                 this.skipNext = true;
         }
 
         private void Ifg(byte a, byte b)
         {
-            ushort skipcount = 0;
-            if (SkipValue(a))
-                skipcount++;
-            var aVal = GetSource(a, skipcount)();
-            if (SkipValue(b))
-                skipcount++;
-            var bVal = GetSource(b, skipcount)();
-
-            if (aVal <= bVal)
+            var values = ResolveSources(a, b);
+            if (values.Item1 <= values.Item2)
                 this.skipNext = true;
         }
 
         private void Ife(byte a, byte b)
         {
-            ushort skipcount = 0;
-            if (SkipValue(a))
-                skipcount++;
-            var aVal = GetSource(a, skipcount)();
-            if (SkipValue(b))
-                skipcount++;
-            var bVal = GetSource(b, skipcount)();
+            var values = ResolveSources(a, b);
+            if (values.Item1 != values.Item2)
+                this.skipNext = true;
+        }
 
-            if (aVal != bVal)
+        private void Ifn(byte a, byte b)
+        {
+            var values = ResolveSources(a, b);
+            if (values.Item1 == values.Item2)
                 this.skipNext = true;
         }
 
         private void Xor(byte a, byte b)
         {
-            ushort skipcount = 0;
-            if (SkipValue(a))
-                skipcount++;
-            var aVal = GetSource(a, skipcount)();
-            var dest = GetDestination(a, skipcount);
-
-            if (SkipValue(b))
-                skipcount++;
-            var bVal = GetSource(b, skipcount)();
-            
-
-            dest((ushort)(aVal ^ bVal));
+            var values = ResolveSources(a, b);
+            var dest = GetDestination(a);
+            dest((ushort)(values.Item1 ^ values.Item2));
         }
 
         private void Bor(byte a, byte b)
         {
-            ushort skipcount = 0;
-            if (SkipValue(a))
-                skipcount++;
-            var aVal = GetSource(a, skipcount)();
-            var dest = GetDestination(a, skipcount);
-
-            if (SkipValue(b))
-                skipcount++;
-            var bVal = GetSource(b, skipcount)();
-
-            dest((ushort)(aVal | bVal));
+            var values = ResolveSources(a, b);
+            var dest = GetDestination(a);
+            dest((ushort)(values.Item1 | values.Item2));
         }
 
         private void And(byte a, byte b)
         {
-            ushort skipcount = 0;
-            if (SkipValue(a))
-                skipcount++;
-            var aVal = GetSource(a, skipcount)();
-            var dest = GetDestination(a, skipcount);
-
-            if (SkipValue(b))
-                skipcount++;
-            var bVal = GetSource(b, skipcount)();
-
-            dest((ushort)(aVal & bVal));
+            var values = ResolveSources(a, b);
+            var dest = GetDestination(a);            
+            dest((ushort)(values.Item1 & values.Item2));
         }
 
         private void Shr(byte a, byte b)
@@ -529,20 +506,6 @@ namespace DCPU16.VM
             this.programCounter = value;
             this.programCounterManupulated = true;
         }
-       
-        private void Ifn(byte a, byte b)
-        {
-            ushort skipcount = 0;
-            if (SkipValue(a))
-                skipcount++;
-            var aVal = GetSource(a, skipcount)();
-            if (SkipValue(b))
-                skipcount++;
-            var bVal = GetSource(b,skipcount)();
-
-            if (aVal == bVal)
-                this.skipNext = true;
-        }
 
         private void Sub(byte a, byte b)
         {
@@ -550,7 +513,7 @@ namespace DCPU16.VM
             if (SkipValue(a))
                 skipcount++;
             ushort aVal = GetSource(a, skipcount)();
-            var dest = GetDestination(a, skipcount);
+            var dest = GetDestination(a);
             if (SkipValue(b))
                 skipcount++;
             ushort bVal = GetSource(b, skipcount)();
@@ -567,7 +530,7 @@ namespace DCPU16.VM
             ushort skipcount = 0;
             if (SkipValue(a))
                 skipcount++;
-            var dest = GetDestination(a, skipcount);
+            var dest = GetDestination(a);
             if (SkipValue(b))
                 skipcount++;
             var source = GetSource(b, skipcount);
