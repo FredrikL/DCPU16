@@ -142,15 +142,107 @@ namespace DCPU16.VM.Tests
         [Test]
         public void Xor()
         {
-            ushort[] program = { 0x7c41, 0x0001,
-                                 0x7c51, 0x0002,
-                                 0x144b }; // BOR C, J
+            ushort[] program = {
+                                   0x7c41, 0x0001,
+                                   0x7c51, 0x0002,
+                                   0x144b
+                               };
 
             this.cpu.LoadProgram(program);
 
             this.cpu.Run();
 
             Assert.That(this.cpu.Y, Is.EqualTo(0x3));
+        }
+
+        [Test]
+        public void Ife()
+        {
+            ushort[] program = { 0x7c01, 0x0001,
+                                 0x7c11, 0x0001,
+                                 0x040c,
+                                 0x7c01, 0x0004};
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.A, Is.EqualTo(0x4));
+        }
+
+        [Test]
+        public void IfeShouldSkipIfNOtEqual()
+        {
+            ushort[] program = { 0x7c01, 0x0001,
+                                 0x7c11, 0x0002,
+                                 0x040c,
+                                 0x7c01, 0x0004};
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.A, Is.EqualTo(0x1));
+        }
+
+        [Test]
+        public void Ifg()
+        {
+            ushort[] program = { 0x7c01, 0x0002,
+                                 0x7c11, 0x0001,
+                                 0x040e,
+                                 0x7c01, 0x0004};
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.A, Is.EqualTo(0x4));
+        }
+
+        [Test]
+        public void IfgShouldSkipIfNotGreater()
+        {
+            ushort[] program = { 0x7c01, 0x0001,
+                                 0x7c11, 0x0001,
+                                 0x040e,
+                                 0x7c01, 0x0004};
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.A, Is.EqualTo(0x1));
+        }
+
+        [Test]
+        public void Ifb()
+        {
+            ushort[] program = { 0x7c01, 0x0001,
+                                 0x7c11, 0x0003,
+                                 0x040f,
+                                 0x7c01, 0x0004}; 
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.A, Is.EqualTo(0x4));
+        }
+
+        [Test]
+        public void IfbShouldSkip()
+        {
+            ushort[] program = { 0x7c01, 0x0001,
+                                 0x7c11, 0x0002,
+                                 0x040f,
+                                 0x7c01, 0x0004};
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Run();
+
+            Assert.That(this.cpu.A, Is.EqualTo(0x1));
         }
     }
 }

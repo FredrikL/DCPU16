@@ -278,6 +278,7 @@ namespace DCPU16.VM
 
                     case 0xc:
                         Debug.WriteLine("IFE");
+                        this.Ife(ins.a, ins.b);
                         break;
 
                     case 0xd:
@@ -287,16 +288,45 @@ namespace DCPU16.VM
 
                     case 0xe:
                         Debug.WriteLine("IFG");
+                        this.Ifg(ins.a, ins.b);
                         break;
 
                     case 0xf:
                         Debug.WriteLine("IFB");
+                        this.Ifb(ins.a, ins.b);
                         break;
 
                     default:
                         throw new NotImplementedException("Run");
                 }
             }
+        }
+
+        private void Ifb(byte a, byte b)
+        {
+            var aVal = GetSource(a)();
+            var bVal = GetSource(b)();
+
+            if ((aVal & bVal) == 0)
+                this.SkipNextInstruction();
+        }
+
+        private void Ifg(byte a, byte b)
+        {
+            var aVal = GetSource(a)();
+            var bVal = GetSource(b)();
+
+            if (aVal <= bVal)
+                this.SkipNextInstruction();
+        }
+
+        private void Ife(byte a, byte b)
+        {
+            var aVal = GetSource(a)();
+            var bVal = GetSource(b)();
+
+            if (aVal != bVal)
+                this.SkipNextInstruction();
         }
 
         private void Xor(byte a, byte b)
