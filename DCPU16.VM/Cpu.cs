@@ -83,7 +83,7 @@ namespace DCPU16.VM
             if (SkipValue(ins.b)) this.programCounter++;
         }
 
-        private Func<ushort> GetSource(byte value)
+        private Func<ushort> GetSource(byte value, int offset  = 0)
         {
             ushort val;
 
@@ -126,6 +126,32 @@ namespace DCPU16.VM
                 case 0x0f:
                     return () => this.ram[this.j];
 
+                case 0x10:
+                    val = this.ram[this.programCounter+offset];
+                    return () => this.ram[val + this.a];
+                case 0x11:
+                    val = this.ram[this.programCounter + offset];
+                    return () => this.ram[val + this.b];
+                case 0x12:
+                    val = this.ram[this.programCounter + offset];
+                    return () => this.ram[val + this.c];
+                case 0x13:
+                    val = this.ram[this.programCounter + offset];
+                    return () => this.ram[val + this.x];
+                case 0x14:
+                    val = this.ram[this.programCounter + offset];
+                    return () => this.ram[val + this.y];
+                case 0x15:
+                    val = this.ram[this.programCounter + offset];
+                    return () => this.ram[val + this.z];
+                case 0x16:
+                    val = this.ram[this.programCounter + offset];
+                    return () => this.ram[val + this.i];
+                case 0x17:
+                    val = this.ram[this.programCounter + offset];
+                    return () => this.ram[val + this.a];
+
+
                 case 0x18:
                     return () => this.ram[this.stackPointer++];
 
@@ -134,7 +160,7 @@ namespace DCPU16.VM
                     return () => this.ram[val];
 
                 case 0x1f:
-                    val = this.ram[this.programCounter++];
+                    val = this.ram[this.programCounter+offset];
                     return () => val;             
 
                 default:
@@ -142,7 +168,7 @@ namespace DCPU16.VM
             }            
         }
 
-        private Action<ushort> GetDestination( byte value)
+        private Action<ushort> GetDestination(byte value, int offset = 0)
         {
             ushort val;
             switch(value)
@@ -165,35 +191,35 @@ namespace DCPU16.VM
                     return v => this.j = v;
 
                 case 0x10:
-                    val = this.ram[this.programCounter++];
+                    val = this.ram[this.programCounter+offset];
                     return v => this.ram[val + this.a] = v;
                 case 0x11:
-                    val = this.ram[this.programCounter++];
+                    val = this.ram[this.programCounter + offset];
                     return v => this.ram[val + this.b] = v;
                 case 0x12:
-                    val = this.ram[this.programCounter++];
+                    val = this.ram[this.programCounter + offset];
                     return v => this.ram[val + this.c] = v;
                 case 0x13:
-                    val = this.ram[this.programCounter++];
+                    val = this.ram[this.programCounter + offset];
                     return v => this.ram[val + this.x] = v;
                 case 0x14:
-                    val = this.ram[this.programCounter++];
+                    val = this.ram[this.programCounter + offset];
                     return v => this.ram[val + this.y] = v;
                 case 0x15:
-                    val = this.ram[this.programCounter++];
+                    val = this.ram[this.programCounter + offset];
                     return v => this.ram[val + this.z] = v;
                 case 0x16:
-                    val = this.ram[this.programCounter++];
+                    val = this.ram[this.programCounter + offset];
                     return v => this.ram[val + this.i] = v;
                 case 0x17:
-                    val = this.ram[this.programCounter++];
+                    val = this.ram[this.programCounter + offset];
                     return v => this.ram[val + this.j] = v;
 
                 case 0x1c:
                     return v => this.programCounter = v;
 
                 case 0x1e:
-                    val = this.ram[this.programCounter++];
+                    val = this.ram[this.programCounter+offset];
                     return v => this.ram[val] = v;
 
                 default:
@@ -203,7 +229,7 @@ namespace DCPU16.VM
 
         private Instruction GetInstruction()
         {
-            ushort word = ram[this.programCounter++];
+            ushort word = ram[this.programCounter];
             byte instruction = (byte)(0xf & word);
             byte a = (byte)(0x3f & (word >> 0x4));
             byte b = (byte)(0x3f & (word >> 0xa));
@@ -227,8 +253,7 @@ namespace DCPU16.VM
                                 break;
                             default:
 #if DEBUG
-                                // for testing, remove once full implementation is done
-                                this.programCounter -= 1;
+                                // for testing, remove once full implementation is done                                
                                 return;
 #else
                                 break;
@@ -300,6 +325,9 @@ namespace DCPU16.VM
                     default:
                         throw new NotImplementedException("Run");
                 }
+                this.programCounter++;
+                if (SkipValue(ins.a)) this.programCounter++;
+                if (SkipValue(ins.b)) this.programCounter++;
             }
         }
 
@@ -332,27 +360,46 @@ namespace DCPU16.VM
 
         private void Xor(byte a, byte b)
         {
-            var aVal = GetSource(a)();
-            var bVal = GetSource(b)();
-            var dest = GetDestination(a);
+            ushort skipcount = 0;
+            if (SkipValue(a))
+                skipcount++;
+            var aVal = GetSource(a, skipcount)();
+            var dest = GetDestination(a, skipcount);
+
+            if (SkipValue(b))
+                skipcount++;
+            var bVal = GetSource(b, skipcount)();
+            
 
             dest((ushort)(aVal ^ bVal));
         }
 
         private void Bor(byte a, byte b)
         {
-            var aVal = GetSource(a)();
-            var bVal = GetSource(b)();
-            var dest = GetDestination(a);
+            ushort skipcount = 0;
+            if (SkipValue(a))
+                skipcount++;
+            var aVal = GetSource(a, skipcount)();
+            var dest = GetDestination(a, skipcount);
+
+            if (SkipValue(b))
+                skipcount++;
+            var bVal = GetSource(b, skipcount)();
 
             dest((ushort)(aVal | bVal));
         }
 
         private void And(byte a, byte b)
         {
-            var aVal = GetSource(a)();
-            var bVal = GetSource(b)();
-            var dest = GetDestination(a);
+            ushort skipcount = 0;
+            if (SkipValue(a))
+                skipcount++;
+            var aVal = GetSource(a, skipcount)();
+            var dest = GetDestination(a, skipcount);
+
+            if (SkipValue(b))
+                skipcount++;
+            var bVal = GetSource(b, skipcount)();
 
             dest((ushort)(aVal & bVal));
         }
@@ -474,8 +521,13 @@ namespace DCPU16.VM
 
         private void Set(byte a, byte b)
         {
-            var dest = GetDestination(a);
-            var source = GetSource(b);
+            ushort skipcount = 0;
+            if (SkipValue(a))
+                skipcount++;
+            var dest = GetDestination(a, skipcount);
+            if (SkipValue(b))
+                skipcount++;
+            var source = GetSource(b, skipcount);
 
             dest(source());
         }
