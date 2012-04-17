@@ -16,19 +16,23 @@ namespace DCPU16.VM.Tests
         [Test]
         public void WriteToDestination()
         {
-            // B
-            ushort load = (ushort) 0x7c01 + (0x01 << 4);
-            ushort instruction = (ushort) (0x01 << 10) + (0x01 << 4) + 0x01;
+            for (int i = 0x8; i < 0x10; i++)
+            {
+                ushort load = (ushort)( 0x7c01 + ((i-8) << 4));
+                ushort instruction = (ushort) (((i-8) << 10) + (i << 4) + 0x01);
 
-            ushort[] program = {   load, 0xdead,
-                                   instruction
-                               };
+                ushort[] program = {
+                                       load, 0xdead,
+                                       instruction
+                                   };
 
-            this.cpu.LoadProgram(program);
+                this.cpu.LoadProgram(program);
 
-            this.cpu.Run();
+                this.cpu.Run();
 
-            Assert.That(this.cpu.B, Is.EqualTo(0xdead));
+                Assert.That(this.cpu.Registers[i-8], Is.EqualTo(0xdead));
+                Assert.That(this.cpu.Ram[0xdead], Is.EqualTo(0xdead));
+            }
         }
 
         [Test]
