@@ -36,9 +36,17 @@ namespace DCPU16.Assembler
             var nextWordAndRegister = config.Expression();
             nextWordAndRegister.ThatMatches(@"\[0x\d{4}\+[ABCXYZIJ]\]").AndReturns(f => this.instructionResolver.Resolve(f));
 
+            var nextWord = config.Expression();
+            nextWord.ThatMatches(@"\[0x\d{4}\]").AndReturns(f => this.instructionResolver.Resolve(f));
+
+            var nextWordLiteral = config.Expression(); //TODO: meh ? should be \d{1,4
+            nextWordLiteral.ThatMatches(@"0x\d{2}").AndReturns(f => this.instructionResolver.Resolve(f));
+
             register.IsMadeUp.By(basicRegister).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
                 .By(registerPointer).As("Name").WhenFound(f => (ushort)(this.valueMap[f.Name] + 0x8)).Or
-                .By(nextWordAndRegister).As("Instr").WhenFound(f => f.Instr);
+                .By(nextWordAndRegister).As("Instr").WhenFound(f => f.Instr).Or
+                .By(nextWord).As("Instr").WhenFound(f => f.Instr).Or
+                .By(nextWordLiteral).As("Instr").WhenFound(f => f.Instr);
             return register;
         }
     }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace DCPU16.Assembler
+﻿namespace DCPU16.Assembler
 {
     class Program
     {

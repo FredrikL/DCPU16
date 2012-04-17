@@ -48,6 +48,10 @@
   <ItemGroup>
     <Compile Include="AssemblerImpl.cs" />
     <Compile Include="IInstructionBuilder.cs" />
+    <Compile Include="IInstructionResolver.cs" />
+    <Compile Include="InstructionBuilder.cs" />
+    <Compile Include="InstructionResolver.cs" />
+    <Compile Include="IValueMap.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
