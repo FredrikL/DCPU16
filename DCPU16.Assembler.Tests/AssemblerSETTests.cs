@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace DCPU16.Assembler.Tests
 {
     [TestFixture]
-    public class AssemblerTests
+    public class AssemblerSETTests
     {
         private AssemblerImpl assembler;
 
@@ -35,6 +35,27 @@ namespace DCPU16.Assembler.Tests
             var result = this.assembler.Assemble(assembly);
 
             Assert.That(result.Single(), Is.EqualTo(0x0401));
+        }
+
+        [Test]
+        public void ShouldSupportSetRegisterPointer()
+        {
+            var assembly = "SET [C], [X]";
+
+            var result = this.assembler.Assemble(assembly);
+
+            Assert.That(result.Single(), Is.EqualTo(0x2ca1));
+        }
+
+        [Test]
+        public void SetShouldHandleNextWordPlusRegister()
+        {
+            var assembly = "SET [0x2000+Z], Y";
+
+            var result = this.assembler.Assemble(assembly).ToArray();
+
+            Assert.That(result[0], Is.EqualTo(0x1151));
+            Assert.That(result[1], Is.EqualTo(0x2000));
         }
 
     }
