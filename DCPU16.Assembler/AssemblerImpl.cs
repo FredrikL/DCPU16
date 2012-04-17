@@ -34,13 +34,13 @@ namespace DCPU16.Assembler
             registerPointer.ThatMatches(@"\[([ABCXYZIJ])\]").AndReturns(f => f.Substring(1, 1));
 
             var nextWordAndRegister = config.Expression();
-            nextWordAndRegister.ThatMatches(@"\[0x\d{4}\+[ABCXYZIJ]\]").AndReturns(f => this.instructionResolver.Resolve(f));
+            nextWordAndRegister.ThatMatches(@"\[0x\d{1:4}\+[ABCXYZIJ]\]").AndReturns(f => this.instructionResolver.Resolve(f));
 
             var nextWord = config.Expression();
-            nextWord.ThatMatches(@"\[0x\d{4}\]").AndReturns(f => this.instructionResolver.Resolve(f));
+            nextWord.ThatMatches(@"\[0x\d{1:4}\]").AndReturns(f => this.instructionResolver.Resolve(f));
 
             var nextWordLiteral = config.Expression(); //TODO: meh ? should be \d{1,4
-            nextWordLiteral.ThatMatches(@"0x\d{2}").AndReturns(f => this.instructionResolver.Resolve(f));
+            nextWordLiteral.ThatMatches(@"0x\d{1:4}").AndReturns(f => this.instructionResolver.Resolve(f));
 
             register.IsMadeUp.By(basicRegister).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
                 .By(registerPointer).As("Name").WhenFound(f => (ushort)(this.valueMap[f.Name] + 0x8)).Or
