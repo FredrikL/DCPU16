@@ -22,6 +22,7 @@ namespace DCPU16.Assembler
             this.registerValueMap.Add("Z", 0x5);
             this.registerValueMap.Add("I", 0x6);
             this.registerValueMap.Add("J", 0x7);
+            this.registerValueMap.Add("PC", 0x1c);
         }
 
         public ushort this[string registerCode]

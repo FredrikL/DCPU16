@@ -70,6 +70,16 @@ namespace DCPU16.Assembler.Tests
             Assert.That(result[2], Is.EqualTo(0x0020));
         }
 
+        [Test]
+        public void ShouldBeAbleToSetProgramCounter()
+        {
+            var asm = "SET PC, 0x1000";
+
+            var result = this.assembler.Assemble(asm).ToArray();
+
+            Assert.That(result[0], Is.EqualTo(0x7dc1));
+            Assert.That(result[1], Is.EqualTo(0x1000));
+        }
     }
 }
 

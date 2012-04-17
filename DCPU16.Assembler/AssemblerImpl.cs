@@ -12,15 +12,21 @@ namespace DCPU16.Assembler
         public ushort[] Assemble(string assembly)
         {
             var config = ParserFactory.Fluent();
-            var set = config.Rule();
+            var instructions = config.Rule();
 
             var register = GetRegisterMap(config);
 
-            set.IsMadeUp.By("SET").Followed.ByListOf(register).As("values").
-                ThatIs.SeparatedBy(",").
-                WhenFound(f => this.instructionBuilder.BuildInstruction(0x01, f));
+            // Prescan source to find jump lables ?
 
-            var x = (ushort[])config.CreateParser().Parse(assembly);
+            instructions.IsMadeUp.By("SET").Followed.ByListOf(register).As("values").
+                ThatIs.SeparatedBy(",").
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x01, f)).Or
+                .By("SUB").Followed.ByListOf(register).As("values").
+                ThatIs.SeparatedBy(",").
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x03, f));
+
+            IParser<object> parser = config.CreateParser();
+            var x = (ushort[])parser.Parse(assembly);
             return x;
         }
 
@@ -39,14 +45,18 @@ namespace DCPU16.Assembler
             var nextWord = config.Expression();
             nextWord.ThatMatches(@"\[0x\d{1:4}\]").AndReturns(f => this.instructionResolver.Resolve(f));
 
-            var nextWordLiteral = config.Expression(); //TODO: meh ? should be \d{1,4
+            var nextWordLiteral = config.Expression();
             nextWordLiteral.ThatMatches(@"0x\d{1:4}").AndReturns(f => this.instructionResolver.Resolve(f));
+
+            var pc = config.Expression();
+            pc.ThatMatches("PC").AndReturns(f => f);
 
             register.IsMadeUp.By(basicRegister).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
                 .By(registerPointer).As("Name").WhenFound(f => (ushort)(this.valueMap[f.Name] + 0x8)).Or
                 .By(nextWordAndRegister).As("Instr").WhenFound(f => f.Instr).Or
                 .By(nextWord).As("Instr").WhenFound(f => f.Instr).Or
-                .By(nextWordLiteral).As("Instr").WhenFound(f => f.Instr);
+                .By(nextWordLiteral).As("Instr").WhenFound(f => f.Instr).Or
+                .By(pc).As("Name").WhenFound(f => this.valueMap[f.Name]);
             return register;
         }
     }
