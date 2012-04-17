@@ -157,6 +157,18 @@ namespace DCPU16.VM
                 case 0x18:
                     return () => this.ram[this.stackPointer++];
 
+                case 0x19:
+                    return () => this.ram[this.stackPointer];
+
+                case 0x1b:
+                    return () => this.programCounter;
+
+                case 0x1c:
+                    return () => this.programCounter;
+
+                case 0x1d:
+                    return () => this.overflow;
+
                 case 0x1e:
                     val = this.ram[this.programCounter+offset];
                     return () => this.ram[val];
@@ -237,13 +249,25 @@ namespace DCPU16.VM
                     val = this.ram[this.programCounter + offset];
                     return v => this.ram[val + this.j] = v;
 
+                case 0x1a:
+                    return v => this.ram[--this.stackPointer] = v;
+
+                case 0x1b:
+                    return v => this.stackPointer = v;
+
                 case 0x1c:
                     this.programCounterManupulated = true;
                     return v => this.programCounter = v;
 
+                case 0x1d:
+                    return v => this.overflow = v;
+
                 case 0x1e:
                     val = this.ram[this.programCounter+offset];
                     return v => this.ram[val] = v;
+
+                case 0x1f:
+                    return v => this.ram[this.programCounter + offset] = v;
 
                 default:
                     throw new NotImplementedException("GetDestination");
@@ -497,7 +521,7 @@ namespace DCPU16.VM
             if (SkipValue(a))
                 skipcount++;
             var value = GetSource(a, skipcount)();
-            this.Push((ushort)(this.programCounter+  skipcount+1));
+            this.Push((ushort)(this.programCounter + skipcount + 1)); // push locaion of next instruction
             this.programCounter = value;
             this.programCounterManupulated = true;
         }
