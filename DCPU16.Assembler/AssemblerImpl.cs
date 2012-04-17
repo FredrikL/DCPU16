@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Piglet.Parser;
 using Piglet.Parser.Configuration.Fluent;
 
@@ -12,22 +14,25 @@ namespace DCPU16.Assembler
         public ushort[] Assemble(string assembly)
         {
             var config = ParserFactory.Fluent();
+            var wrapper = config.Rule();
             var instructions = config.Rule();
 
             var register = GetRegisterMap(config);
-
-            // Prescan source to find jump lables ?
+            //TODO Prescan source to find jump lables ?
 
             instructions.IsMadeUp.By("SET").Followed.ByListOf(register).As("values").
                 ThatIs.SeparatedBy(",").
-                WhenFound(f => this.instructionBuilder.BuildInstruction(0x01, f)).Or
-                .By("SUB").Followed.ByListOf(register).As("values").
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x01, f)).Or.
+                By("SUB").Followed.ByListOf(register).As("values").
                 ThatIs.SeparatedBy(",").
                 WhenFound(f => this.instructionBuilder.BuildInstruction(0x03, f));
 
+            wrapper.IsMadeUp.ByListOf<ushort[]>(instructions).As("Result").ThatIs.WhenFound(f =>  f.Result);
+
             IParser<object> parser = config.CreateParser();
-            var x = (ushort[])parser.Parse(assembly);
-            return x;
+            var x = (List<ushort[]>)parser.Parse(assembly);
+            var z = x.SelectMany(i => i).ToArray();
+            return z;
         }
 
         private IRule GetRegisterMap(IFluentParserConfigurator config)

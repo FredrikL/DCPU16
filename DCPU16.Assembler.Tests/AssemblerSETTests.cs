@@ -52,7 +52,7 @@ namespace DCPU16.Assembler.Tests
         {
             var assembly = "SET [0x2000+Z], Y";
 
-            var result = this.assembler.Assemble(assembly).ToArray();
+            var result = this.assembler.Assemble(assembly);
 
             Assert.That(result[0], Is.EqualTo(0x1151));
             Assert.That(result[1], Is.EqualTo(0x2000));
@@ -63,7 +63,7 @@ namespace DCPU16.Assembler.Tests
         {
             var asm = "SET [0x1000], 0x20";
 
-            var result = this.assembler.Assemble(asm).ToArray();
+            var result = this.assembler.Assemble(asm);
 
             Assert.That(result[0], Is.EqualTo(0x7de1));
             Assert.That(result[1], Is.EqualTo(0x1000));
@@ -75,10 +75,25 @@ namespace DCPU16.Assembler.Tests
         {
             var asm = "SET PC, 0x1000";
 
-            var result = this.assembler.Assemble(asm).ToArray();
+            var result = this.assembler.Assemble(asm);
 
             Assert.That(result[0], Is.EqualTo(0x7dc1));
             Assert.That(result[1], Is.EqualTo(0x1000));
+        }
+
+        [Test]
+        public void ShouldBeAbleToHandleMoreThanOneInstruction()
+        {
+            var asm = @"SET A, 0x30
+                        SET [0x1000], 0x20";
+
+            var result = this.assembler.Assemble(asm);
+
+            Assert.That(result[0], Is.EqualTo(0x7c01));
+            Assert.That(result[1], Is.EqualTo(0x0030));
+            Assert.That(result[2], Is.EqualTo(0x7de1));
+            Assert.That(result[3], Is.EqualTo(0x1000));
+            Assert.That(result[4], Is.EqualTo(0x0020));
         }
     }
 }
