@@ -26,9 +26,16 @@ namespace DCPU16.Assembler
                 ushort first = (ushort)(0x1e);
                 ushort second = UInt16.Parse(match.Groups[1].Value, NumberStyles.HexNumber);
                 return new Tuple<ushort, ushort>(first, second);
-            }      
+            }
 
-            match = Regex.Match(statement, @"0x(\d{1,4})",RegexOptions.Compiled);
+            match = Regex.Match(statement, @"^(\d{1,2})$", RegexOptions.Compiled);
+            if (match.Success)
+            {
+                ushort second = UInt16.Parse(match.Groups[1].Value, NumberStyles.Integer);
+                return (ushort)(second + 0x20);
+            }   
+
+            match = Regex.Match(statement, @"0x(\d{1,4})|(\d{1,4})", RegexOptions.Compiled);
             if (match.Success)
             {
                 ushort first = (ushort)(0x1f);

@@ -26,6 +26,9 @@ namespace DCPU16.Assembler
                 By("SUB").Followed.ByListOf(register).As("values").
                 ThatIs.SeparatedBy(",").
                 WhenFound(f => this.instructionBuilder.BuildInstruction(0x03, f)).Or.
+                By("SHL").Followed.ByListOf(register).As("values").
+                ThatIs.SeparatedBy(",").
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x07, f)).Or.
                 By("IFN").Followed.ByListOf(register).As("values").
                 ThatIs.SeparatedBy(",").
                 WhenFound(f => this.instructionBuilder.BuildInstruction(0x0d,f));
@@ -53,6 +56,8 @@ namespace DCPU16.Assembler
 
             var nextWordLiteral = config.Expression();
             nextWordLiteral.ThatMatches(@"0x\d{1:4}").AndReturns(f => this.instructionResolver.Resolve(f));
+            var nextWordLiteralDecimal = config.Expression();
+            nextWordLiteralDecimal.ThatMatches(@"\d{1:2}").AndReturns(f => this.instructionResolver.Resolve(f));
 
             var pc = config.Expression();
             pc.ThatMatches("PC").AndReturns(f => f);
@@ -62,6 +67,7 @@ namespace DCPU16.Assembler
                 .By(nextWordAndRegister).As("Instr").WhenFound(f => f.Instr).Or
                 .By(nextWord).As("Instr").WhenFound(f => f.Instr).Or
                 .By(nextWordLiteral).As("Instr").WhenFound(f => f.Instr).Or
+                .By(nextWordLiteralDecimal).As("Instr").WhenFound(f => f.Instr).Or
                 .By(pc).As("Name").WhenFound(f => this.valueMap[f.Name]);
             return register;
         }

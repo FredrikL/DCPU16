@@ -82,6 +82,16 @@ namespace DCPU16.Assembler.Tests
         }
 
         [Test]
+        public void ShouldBeAbleTOSetLiterals()
+        {
+            var asm = "SET I, 10";
+
+            var result = this.assembler.Assemble(asm);
+
+            Assert.That(result[0], Is.EqualTo(0xa861));
+        }
+
+        [Test]
         public void ShouldBeAbleToHandleMoreThanOneInstruction()
         {
             var asm = @"SET A, 0x30
