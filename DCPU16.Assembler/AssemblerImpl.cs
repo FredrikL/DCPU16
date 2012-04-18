@@ -14,7 +14,7 @@ namespace DCPU16.Assembler
         public ushort[] Assemble(string assembly)
         {
             var config = ParserFactory.Fluent();
-            var wrapper = config.Rule();
+            var asm = config.Rule();
             var instructions = config.Rule();
 
             var register = GetRegisterMap(config);
@@ -25,14 +25,15 @@ namespace DCPU16.Assembler
                 WhenFound(f => this.instructionBuilder.BuildInstruction(0x01, f)).Or.
                 By("SUB").Followed.ByListOf(register).As("values").
                 ThatIs.SeparatedBy(",").
-                WhenFound(f => this.instructionBuilder.BuildInstruction(0x03, f));
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x03, f)).Or.
+                By("IFN").Followed.ByListOf(register).As("values").
+                ThatIs.SeparatedBy(",").
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x0d,f));
 
-            wrapper.IsMadeUp.ByListOf<ushort[]>(instructions).As("Result").ThatIs.WhenFound(f =>  f.Result);
+            asm.IsMadeUp.ByListOf<ushort[]>(instructions).As("Result").ThatIs.WhenFound(f =>  f.Result);
 
             IParser<object> parser = config.CreateParser();
-            var x = (List<ushort[]>)parser.Parse(assembly);
-            var z = x.SelectMany(i => i).ToArray();
-            return z;
+            return ((List<ushort[]>)parser.Parse(assembly)).SelectMany(i => i).ToArray();
         }
 
         private IRule GetRegisterMap(IFluentParserConfigurator config)

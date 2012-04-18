@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblerSETTests.cs" />
+    <Compile Include="ComparisonTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SubTests.cs" />
   </ItemGroup>
