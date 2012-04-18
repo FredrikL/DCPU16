@@ -54,6 +54,7 @@
     <Compile Include="IValueMap.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ValueMap.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

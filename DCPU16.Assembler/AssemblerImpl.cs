@@ -23,15 +23,50 @@ namespace DCPU16.Assembler
             instructions.IsMadeUp.By("SET").Followed.ByListOf(register).As("values").
                 ThatIs.SeparatedBy(",").
                 WhenFound(f => this.instructionBuilder.BuildInstruction(0x01, f)).Or.
+                By("ADD").Followed.ByListOf(register).As("values").
+                ThatIs.SeparatedBy(",").
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x02, f)).Or.
                 By("SUB").Followed.ByListOf(register).As("values").
                 ThatIs.SeparatedBy(",").
                 WhenFound(f => this.instructionBuilder.BuildInstruction(0x03, f)).Or.
+                By("MUL").Followed.ByListOf(register).As("values").
+                ThatIs.SeparatedBy(",").
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x04, f)).Or.
+                By("DIV").Followed.ByListOf(register).As("values").
+                ThatIs.SeparatedBy(",").
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x05, f)).Or.
+                By("MOD").Followed.ByListOf(register).As("values").
+                ThatIs.SeparatedBy(",").
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x06, f)).Or.
                 By("SHL").Followed.ByListOf(register).As("values").
                 ThatIs.SeparatedBy(",").
                 WhenFound(f => this.instructionBuilder.BuildInstruction(0x07, f)).Or.
+                By("SHR").Followed.ByListOf(register).As("values").
+                ThatIs.SeparatedBy(",").
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x08, f)).Or.
+                By("AND").Followed.ByListOf(register).As("values").
+                ThatIs.SeparatedBy(",").
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x09, f)).Or.
+                By("BOR").Followed.ByListOf(register).As("values").
+                ThatIs.SeparatedBy(",").
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x0a, f)).Or.
+                By("XOR").Followed.ByListOf(register).As("values").
+                ThatIs.SeparatedBy(",").
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x0b, f)).Or.
+                By("IFE").Followed.ByListOf(register).As("values").
+                ThatIs.SeparatedBy(",").
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x0c, f)).Or.
                 By("IFN").Followed.ByListOf(register).As("values").
                 ThatIs.SeparatedBy(",").
-                WhenFound(f => this.instructionBuilder.BuildInstruction(0x0d,f));
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x0d, f)).Or.
+                By("IFG").Followed.ByListOf(register).As("values").
+                ThatIs.SeparatedBy(",").
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x0e, f)).Or.
+                By("IFB").Followed.ByListOf(register).As("values").
+                ThatIs.SeparatedBy(",").
+                WhenFound(f => this.instructionBuilder.BuildInstruction(0x0f, f)).Or.
+                By("JSR").Followed.By(register).As("values").                
+                WhenFound(f => this.instructionBuilder.BuildExtendedInstruction(0x01, f));
 
             asm.IsMadeUp.ByListOf<ushort[]>(instructions).As("Result").ThatIs.WhenFound(f =>  f.Result);
 
@@ -61,6 +96,16 @@ namespace DCPU16.Assembler
 
             var pc = config.Expression();
             pc.ThatMatches("PC").AndReturns(f => f);
+            var sp = config.Expression();
+            sp.ThatMatches("SP").AndReturns(f => f);
+            var o = config.Expression();
+            o.ThatMatches("O").AndReturns(f => f);
+            var pop = config.Expression();
+            pop.ThatMatches("POP").AndReturns(f => f);
+            var peek = config.Expression();
+            peek.ThatMatches("PEEK").AndReturns(f => f);
+            var push = config.Expression();
+            push.ThatMatches("PUSH").AndReturns(f => f);
 
             register.IsMadeUp.By(basicRegister).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
                 .By(registerPointer).As("Name").WhenFound(f => (ushort)(this.valueMap[f.Name] + 0x8)).Or
@@ -68,7 +113,12 @@ namespace DCPU16.Assembler
                 .By(nextWord).As("Instr").WhenFound(f => f.Instr).Or
                 .By(nextWordLiteral).As("Instr").WhenFound(f => f.Instr).Or
                 .By(nextWordLiteralDecimal).As("Instr").WhenFound(f => f.Instr).Or
-                .By(pc).As("Name").WhenFound(f => this.valueMap[f.Name]);
+                .By(pc).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
+                .By(pop).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
+                .By(peek).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
+                .By(push).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
+                .By(sp).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
+                .By(o).As("Name").WhenFound(f => this.valueMap[f.Name]);
             return register;
         }
     }

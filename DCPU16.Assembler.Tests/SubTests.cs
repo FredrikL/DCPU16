@@ -24,5 +24,15 @@ namespace DCPU16.Assembler.Tests
             Assert.That(result[0], Is.EqualTo(0x7803));
             Assert.That(result[1], Is.EqualTo(0x1000));
         }
+
+        [Test]
+        public void SubLiteral()
+        {
+            string asm = "SUB I, 1";
+
+            var result = this.assembler.Assemble(asm).ToArray();
+
+            Assert.That(result[0], Is.EqualTo(0x8463));
+        }
     }
 }

@@ -105,6 +105,16 @@ namespace DCPU16.Assembler.Tests
             Assert.That(result[3], Is.EqualTo(0x1000));
             Assert.That(result[4], Is.EqualTo(0x0020));
         }
+
+        [Test]
+        public void ShouldBePossibleToPop()
+        {
+            var asm = "SET PC, POP";
+
+            var result = this.assembler.Assemble(asm);
+
+            Assert.That(result[0], Is.EqualTo(0x61c1));
+        }
     }
 }
 

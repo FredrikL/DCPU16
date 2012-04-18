@@ -27,5 +27,10 @@ namespace DCPU16.Assembler
 
             return ret.ToArray();
         }
+
+        public ushort[] BuildExtendedInstruction(ushort opCode, dynamic instruction)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
