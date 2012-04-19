@@ -409,7 +409,7 @@ namespace DCPU16.VM
             var dest = GetDestination(a);
 
             if(values.Item2 == 0)               
-                dest(this.overflow = 0);
+                dest(0);
             else
                 dest((ushort) (values.Item1 % values.Item2));
         }
