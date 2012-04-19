@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DCPU16.Assembler
-{  
+{
     public class InstructionBuilder : IInstructionBuilder
     {
         private Dictionary<OpCode, ushort> opCodes = new Dictionary<OpCode, ushort>();
@@ -26,7 +27,7 @@ namespace DCPU16.Assembler
             opCodes.Add(OpCode.IFB, 0xf);
         }
 
-        private static void DoOffset(dynamic instruction, List<ushort> ret, bool second = false)
+        private string DoOffset(dynamic instruction, List<ushort> ret, bool second = false)
         {
             if (instruction.values[second ? 1 : 0] is Tuple<ushort, ushort>)
             {
@@ -38,22 +39,32 @@ namespace DCPU16.Assembler
             {
                 ret[0] = (ushort)(ret[0] + (0x1f << (second ? 10 : 4)));
                 ret.Add(0x0); // placeholder
+                return instruction.values[second ? 1 : 0] as string;
             }
             else
                 ret[0] = (ushort)(ret[0] + (instruction.values[second ? 1 : 0] << (second ? 10 : 4)));
+            return string.Empty;
         }
 
-        public ushort[] BuildInstruction(dynamic instruction)
+        public Instruction BuildInstruction(dynamic instruction)
         {
             var ret = new List<ushort>();
             ret.Add(opCodes[instruction.opcode]);
-            DoOffset(instruction, ret);
-            DoOffset(instruction, ret, true);
+            string label1 = DoOffset(instruction, ret);
+            string label2 = DoOffset(instruction, ret, true);
 
-            return ret.ToArray();
+            var labels = new List<string>();
+            labels.Add(label1);
+            labels.Add(label2);
+
+            string[] l = new string[] {};
+            if (labels.Any(x => !string.IsNullOrEmpty(x)))
+                l = labels.ToArray();
+
+            return new Instruction(ret[0], ret.GetRange(1,ret.Count-1).ToArray(), l);
         }
 
-        public ushort[] BuildExtendedInstruction(ushort opCode, dynamic instruction)
+        public Instruction BuildExtendedInstruction(ushort opCode, dynamic instruction)
         {
             throw new NotImplementedException();
         }

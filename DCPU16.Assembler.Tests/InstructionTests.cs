@@ -47,7 +47,7 @@ namespace DCPU16.Assembler.Tests
             Assert.That(result[2], Is.EqualTo(0x0000));
         }
 
-        [Test, Ignore]
+        [Test]
         public void LabelsAreABitComplicated()
         {
             string asm = @"    SET A, A

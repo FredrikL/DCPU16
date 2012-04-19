@@ -53,7 +53,7 @@ namespace DCPU16.Assembler
 
             var labelWrapper = config.Rule();
             labelWrapper.IsMadeUp.By(label).As("label").Followed.By(instructions).As("ins").
-                WhenFound(f => f.ins).Or
+                WhenFound(f => SetLabel(f.label, f.ins)).Or
                 .By(instructions);
            
             instructions.IsMadeUp.By(opCode).As("opcode").Followed.ByListOf(register).As("values").
@@ -61,10 +61,31 @@ namespace DCPU16.Assembler
                 By("JSR").Followed.By(register).As("values").
                 WhenFound(f => this.instructionBuilder.BuildExtendedInstruction(0x01, f));
 
-            asm.IsMadeUp.ByListOf<ushort[]>(labelWrapper).As("Result").ThatIs.WhenFound(f =>  f.Result);
+            asm.IsMadeUp.ByListOf<Instruction>(labelWrapper).As("Result").ThatIs.WhenFound(f =>  f.Result);
 
             IParser<object> parser = config.CreateParser();
-            return ((List<ushort[]>)parser.Parse(assembly)).SelectMany(i => i).ToArray();
+            List<Instruction> instructionList = (List<Instruction>)parser.Parse(assembly);
+
+            return ResolveLables(instructionList).ToArray();
+        }
+
+        private IEnumerable<ushort> ResolveLables(List<Instruction> instructions)
+        {
+            foreach (var instruction in instructions)
+            {
+                if(!instruction.IsResolved)
+                {
+                    instruction.ResolveLables(instructions.ToArray());
+                }
+            }
+
+            return instructions.SelectMany(instruction => instruction.AsBinary);
+        }
+
+        private Instruction SetLabel(string label, Instruction bar)
+        {            
+            bar.Label = label;
+            return bar;
         }
 
         private IRule GetRegisterMap(IFluentParserConfigurator config)
@@ -87,18 +108,8 @@ namespace DCPU16.Assembler
             var nextWordLiteralDecimal = config.Expression();
             nextWordLiteralDecimal.ThatMatches(@"\d{1:2}").AndReturns(f => this.instructionResolver.Resolve(f));
 
-            var pc = config.Expression();
-            pc.ThatMatches("PC").AndReturns(f => f);
-            var sp = config.Expression();
-            sp.ThatMatches("SP").AndReturns(f => f);
-            var o = config.Expression();
-            o.ThatMatches("O").AndReturns(f => f);
-            var pop = config.Expression();
-            pop.ThatMatches("POP").AndReturns(f => f);
-            var peek = config.Expression();
-            peek.ThatMatches("PEEK").AndReturns(f => f);
-            var push = config.Expression();
-            push.ThatMatches("PUSH").AndReturns(f => f);
+            var constants = config.Expression();
+            constants.ThatMatches("PC|SP|O|POP|PEEK|PUSH").AndReturns(f => f);
 
             var label = config.Expression();
             label.ThatMatches(@"\w+").AndReturns(f => f);
@@ -109,12 +120,7 @@ namespace DCPU16.Assembler
                 .By(nextWord).As("Instr").WhenFound(f => f.Instr).Or
                 .By(nextWordLiteral).As("Instr").WhenFound(f => f.Instr).Or
                 .By(nextWordLiteralDecimal).As("Instr").WhenFound(f => f.Instr).Or
-                .By(pc).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
-                .By(pop).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
-                .By(peek).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
-                .By(push).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
-                .By(sp).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
-                .By(o).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
+                .By(constants).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
                 .By(label).As("Label").WhenFound(f => f.Label);
             return register;
         }
