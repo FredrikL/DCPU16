@@ -304,15 +304,15 @@ namespace DCPU16.VM
                         break;
 
                     case 0x2:
-                        this.Add(ins.a, ins.b);
+                        DoMathOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x + y), (x, y) => (ushort)((x + y) > 0xffff ? 0x0001 : 0x0000));
                         break;
 
                     case 0x3:
-                        this.Sub(ins.a, ins.b);
+                        DoMathOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x - y), (x, y) => (ushort)(x < y ? 0xffff : 0x0000));
                         break;
 
                     case 0x4:
-                        this.Mul(ins.a, ins.b);
+                        DoMathOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x * y), (x, y) => (ushort)(((x * y) >> 16) & 0xffff));
                         break;
 
                     case 0x5:
@@ -324,11 +324,11 @@ namespace DCPU16.VM
                         break;
 
                     case 0x7:
-                        this.Shl(ins.a, ins.b);
+                        DoMathOp(Tuple.Create(GetSource(ins.a)(), (ushort)ins.b), GetDestination(ins.a), (x, y) => (ushort)(x << y), (x, y) => (ushort)(((x << y) >> 16) & 0xffff));
                         break;
 
                     case 0x8:
-                        this.Shr(ins.a, ins.b);
+                        DoMathOp(Tuple.Create(GetSource(ins.a)(), (ushort)ins.b), GetDestination(ins.a), (x, y) => (ushort)(x >> y), (x, y) => (ushort)(((x << 16) >> y) & 0xffff));
                         break;
 
                     case 0x9:
@@ -397,6 +397,12 @@ namespace DCPU16.VM
             destination(op(values.Item1, values.Item2));
         }
 
+        private void DoMathOp(Tuple<ushort, ushort> values, Action<ushort> destination, Func<ushort, ushort, ushort> op, Func<ushort, ushort, ushort> overflowOp)
+        {
+            this.overflow = overflowOp(values.Item1, values.Item2);
+            destination(op(values.Item1, values.Item2));
+        }
+
         private void Mod(byte a, byte b)
         {
             var values = ResolveSources(a, b);
@@ -422,39 +428,6 @@ namespace DCPU16.VM
             }
         }
 
-        private void Mul(byte a, byte b)
-        {
-            var values = ResolveSources(a, b);
-            var dest = GetDestination(a);
-            this.overflow = (ushort)(((values.Item1 * values.Item2) >> 16) & 0xffff);
-            dest((ushort)(values.Item1 * values.Item2));
-        }
-
-        private void Add(byte a, byte b)
-        {
-            var values = ResolveSources(a, b);
-            var dest = GetDestination(a);
-
-            this.overflow = (ushort)((values.Item1 + values.Item2) > 0xffff ? 0x0001 : 0x0000);
-            dest((ushort)(values.Item1 + values.Item2));
-        }
-
-        private void Shl(byte a, byte b)
-        {
-            var destination = GetDestination(a);
-            var source = GetSource(a)();
-            this.overflow = (ushort) (((source << b) >> 16) & 0xffff);
-            destination((ushort)(source << b));
-        }
-
-        private void Shr(byte a, byte b)
-        {
-            var destination = GetDestination(a);
-            var source = GetSource(a)();
-            this.overflow = (ushort)(((source << 16) >> b) & 0xffff);
-            destination((ushort)(source >> b));
-        }
-
         private void Push(ushort value)
         {
             this.ram[--this.stackPointer] = value;
@@ -469,14 +442,6 @@ namespace DCPU16.VM
             this.Push((ushort)(this.programCounter + skipcount + 1)); // push locaion of next instruction
             this.programCounter = value;
             this.programCounterManupulated = true;
-        }
-
-        private void Sub(byte a, byte b)
-        {
-            var values = ResolveSources(a, b);
-            var dest = GetDestination(a);
-            this.overflow = (ushort)(values.Item1 < values.Item2 ? 0xffff : 0x0000);            
-            dest((ushort)(values.Item1 - values.Item2));
         }
 
         private void Set(byte a, byte b)
