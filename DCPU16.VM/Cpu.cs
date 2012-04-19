@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Diagnostics;
 
 namespace DCPU16.VM
 {
     public class Cpu
     {
+        private ISkipValue skipValue = new DefaultSkipValue();
+
         private ushort[] ram = new ushort[0x10000];
 
         // registers
@@ -40,11 +41,6 @@ namespace DCPU16.VM
         public ushort StackPointer { get { return this.stackPointer; } }
         public ushort Overflow { get { return this.overflow; } }
 
-        public Cpu()
-        {
-            Reset();
-        }
-
         private void Reset()
         {
             this.programCounter = 0x0;
@@ -66,21 +62,12 @@ namespace DCPU16.VM
             program.CopyTo(ram, 0);
         }
 
-        private bool SkipValue(byte value)
-        {
-            if (((value >= 0x10) && (value <= 0x17))
-                || value == 0x1e
-                || value == 0x1f)
-                return true;
-            return false;
-        }
-
         private void SkipNextInstruction()
         {
             var ins = GetInstruction();
             // determine if we should advance programcounter 1 or 2 additional steps
-            if (SkipValue(ins.a)) this.programCounter++;
-            if (SkipValue(ins.b)) this.programCounter++;
+            if (this.skipValue.SkipValue(ins.a)) this.programCounter++;
+            if (this.skipValue.SkipValue(ins.b)) this.programCounter++;
         }
 
         private Func<ushort> GetSource(byte value, int offset  = 0)
@@ -184,7 +171,7 @@ namespace DCPU16.VM
         {
             ushort val;
             ushort offset = 0;
-            if (SkipValue(value))
+            if (this.skipValue.SkipValue(value))
                 offset = 1;
             switch(value)
             {
@@ -357,19 +344,19 @@ namespace DCPU16.VM
                         break;
 
                     case 0xc:
-                        this.Ife(ins.a, ins.b);
+                        ShouldSkipNext(ResolveSources(ins.a, ins.b), (x, y) => (x != y));
                         break;
 
                     case 0xd:
-                        this.Ifn(ins.a, ins.b);
+                        ShouldSkipNext(ResolveSources(ins.a, ins.b), (x, y) => (x == y));
                         break;
 
                     case 0xe:
-                        this.Ifg(ins.a, ins.b);
+                        ShouldSkipNext(ResolveSources(ins.a, ins.b), (x, y) => (x <= y));
                         break;
 
                     case 0xf:
-                        this.Ifb(ins.a, ins.b);
+                        ShouldSkipNext(ResolveSources(ins.a, ins.b), (x, y) => (x & y) == 0);
                         break;
 
                     default:
@@ -379,9 +366,8 @@ namespace DCPU16.VM
                 {
                     // in case we're using jsr don't increment programcounter here
                     // it's at the correct position
-                    this.programCounter++;
-                    if (SkipValue(ins.a)) this.programCounter++;
-                    if (SkipValue(ins.b)) this.programCounter++;
+                    SkipNextInstruction();
+                    this.programCounter++;                    
                 }
                 else
                     this.programCounterManupulated = false;
@@ -391,43 +377,20 @@ namespace DCPU16.VM
         private Tuple<ushort, ushort> ResolveSources(byte a, byte b)
         {
             ushort skipcount = 0;
-            if (SkipValue(a))
+            if (this.skipValue.SkipValue(a))
                 skipcount++;
             var aVal = GetSource(a, skipcount)();
-            if (SkipValue(b))
+            if (this.skipValue.SkipValue(b))
                 skipcount++;
             var bVal = GetSource(b, skipcount)();
 
             return Tuple.Create(aVal, bVal);
         }
 
-        private void Ifb(byte a, byte b)
+        private void ShouldSkipNext(Tuple<ushort, ushort> values, Func<ushort,ushort,bool> comp)
         {
-            var values = ResolveSources(a, b);
-            if ((values.Item1 & values.Item2) == 0)
-                this.skipNext = true;
-        }
-
-        private void Ifg(byte a, byte b)
-        {
-            var values = ResolveSources(a, b);
-            if (values.Item1 <= values.Item2)
-                this.skipNext = true;
-        }
-
-        private void Ife(byte a, byte b)
-        {
-            var values = ResolveSources(a, b);
-            if (values.Item1 != values.Item2)
-                this.skipNext = true;
-        }
-
-        private void Ifn(byte a, byte b)
-        {
-            var values = ResolveSources(a, b);
-            if (values.Item1 == values.Item2)
-                this.skipNext = true;
-        }
+            this.skipNext = comp(values.Item1, values.Item2);
+        }       
 
         private void Xor(byte a, byte b)
         {
@@ -516,7 +479,7 @@ namespace DCPU16.VM
         private void Jsr(byte a)
         {
             ushort skipcount = 0;
-            if (SkipValue(a))
+            if (this.skipValue.SkipValue(a))
                 skipcount++;
             var value = GetSource(a, skipcount)();
             this.Push((ushort)(this.programCounter + skipcount + 1)); // push locaion of next instruction
@@ -535,9 +498,9 @@ namespace DCPU16.VM
         private void Set(byte a, byte b)
         {
             ushort skipcount = 0;
-            if (SkipValue(a))
-                skipcount++;            
-            if (SkipValue(b))
+            if (this.skipValue.SkipValue(a))
+                skipcount++;
+            if (this.skipValue.SkipValue(b))
                 skipcount++;
             var source = GetSource(b, skipcount);
 

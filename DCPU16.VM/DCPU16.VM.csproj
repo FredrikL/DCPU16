@@ -41,7 +41,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cpu.cs" />
+    <Compile Include="DefaultSkipValue.cs" />
     <Compile Include="Instruction.cs" />
+    <Compile Include="ISkipValue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
