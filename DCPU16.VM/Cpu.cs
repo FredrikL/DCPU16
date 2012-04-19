@@ -332,31 +332,31 @@ namespace DCPU16.VM
                         break;
 
                     case 0x9:
-                        this.And(ins.a, ins.b);
+                        DoBinaryOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x & y));
                         break;
 
                     case 0xa:
-                        this.Bor(ins.a, ins.b);
+                        DoBinaryOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x | y));
                         break;
 
                     case 0xb:
-                        this.Xor(ins.a, ins.b);
+                        DoBinaryOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x ^ y));
                         break;
 
                     case 0xc:
-                        ShouldSkipNext(ResolveSources(ins.a, ins.b), (x, y) => (x != y));
+                        ShouldSkipNextIf(ResolveSources(ins.a, ins.b), (x, y) => (x != y));
                         break;
 
                     case 0xd:
-                        ShouldSkipNext(ResolveSources(ins.a, ins.b), (x, y) => (x == y));
+                        ShouldSkipNextIf(ResolveSources(ins.a, ins.b), (x, y) => (x == y));
                         break;
 
                     case 0xe:
-                        ShouldSkipNext(ResolveSources(ins.a, ins.b), (x, y) => (x <= y));
+                        ShouldSkipNextIf(ResolveSources(ins.a, ins.b), (x, y) => (x <= y));
                         break;
 
                     case 0xf:
-                        ShouldSkipNext(ResolveSources(ins.a, ins.b), (x, y) => (x & y) == 0);
+                        ShouldSkipNextIf(ResolveSources(ins.a, ins.b), (x, y) => (x & y) == 0);
                         break;
 
                     default:
@@ -387,32 +387,16 @@ namespace DCPU16.VM
             return Tuple.Create(aVal, bVal);
         }
 
-        private void ShouldSkipNext(Tuple<ushort, ushort> values, Func<ushort,ushort,bool> comp)
+        private void ShouldSkipNextIf(Tuple<ushort, ushort> values, Func<ushort,ushort,bool> comp)
         {
             this.skipNext = comp(values.Item1, values.Item2);
-        }       
-
-        private void Xor(byte a, byte b)
-        {
-            var values = ResolveSources(a, b);
-            var dest = GetDestination(a);
-            dest((ushort)(values.Item1 ^ values.Item2));
         }
 
-        private void Bor(byte a, byte b)
+        private void DoBinaryOp(Tuple<ushort, ushort> values, Action<ushort> destination, Func<ushort,ushort,ushort> op)
         {
-            var values = ResolveSources(a, b);
-            var dest = GetDestination(a);
-            dest((ushort)(values.Item1 | values.Item2));
+            destination(op(values.Item1, values.Item2));
         }
 
-        private void And(byte a, byte b)
-        {
-            var values = ResolveSources(a, b);
-            var dest = GetDestination(a);            
-            dest((ushort)(values.Item1 & values.Item2));
-        }
-      
         private void Mod(byte a, byte b)
         {
             var values = ResolveSources(a, b);
