@@ -71,12 +71,9 @@ namespace DCPU16.Assembler
 
         private IEnumerable<ushort> ResolveLables(List<Instruction> instructions)
         {
-            foreach (var instruction in instructions)
+            foreach (var instruction in instructions.Where(instruction => !instruction.IsResolved))
             {
-                if(!instruction.IsResolved)
-                {
-                    instruction.ResolveLables(instructions.ToArray());
-                }
+                instruction.ResolveLables(instructions.ToArray());
             }
 
             return instructions.SelectMany(instruction => instruction.AsBinary);

@@ -61,5 +61,21 @@ namespace DCPU16.Assembler.Tests
             Assert.That(result[2], Is.EqualTo(0x7dc1));
             Assert.That(result[3], Is.EqualTo(0x0001));
         }
+
+        [Test]
+        public void ShouldSupprtJsr()
+        {
+            string asm = @"    JSR troll
+                        :troll SHL X, 4
+                               SET PC, troll";
+
+            var result = this.assembler.Assemble(asm).ToArray();
+
+            Assert.That(result[0], Is.EqualTo(0x7c10));
+            Assert.That(result[1], Is.EqualTo(0x0002));
+            Assert.That(result[2], Is.EqualTo(0x9037));
+            Assert.That(result[3], Is.EqualTo(0x7dc1));
+            Assert.That(result[4], Is.EqualTo(0x0002));
+        } 
     }
 }

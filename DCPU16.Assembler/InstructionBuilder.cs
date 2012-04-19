@@ -64,9 +64,39 @@ namespace DCPU16.Assembler
             return new Instruction(ret[0], ret.GetRange(1,ret.Count-1).ToArray(), l);
         }
 
+        private string DoOffsetExtended(dynamic instruction, List<ushort> ret)
+        {
+            if (instruction.values is Tuple<ushort, ushort>)
+            {
+                var instone = instruction.values as Tuple<ushort, ushort>;
+                ret[0] = (ushort)(ret[0] + (instone.Item1 << 10 ));
+                ret.Add(instone.Item2);
+            }
+            else if (instruction.values is string)
+            {
+                ret[0] = (ushort)(ret[0] + (0x1f <<  10));
+                ret.Add(0x0); // placeholder
+                return instruction.values as string;
+            }
+            else
+                ret[0] = (ushort)(ret[0] + (instruction.values << 10));
+            return string.Empty;
+        }
+
         public Instruction BuildExtendedInstruction(ushort opCode, dynamic instruction)
         {
-            throw new NotImplementedException();
+            var ret = new List<ushort>();
+            ret.Add((ushort)(opCode << 4));
+            string label1 = DoOffsetExtended(instruction, ret);
+
+            var labels = new List<string>();
+            labels.Add(label1);
+
+            string[] l = new string[] { };
+            if (labels.Any(x => !string.IsNullOrEmpty(x)))
+                l = labels.ToArray();
+
+            return new Instruction(ret[0], ret.GetRange(1, ret.Count - 1).ToArray(), l);
         }
     }
 }
