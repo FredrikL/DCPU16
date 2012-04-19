@@ -110,7 +110,6 @@ namespace DCPU16.VM.Tests
             this.cpu.Run();
 
             Assert.That(this.cpu.A, Is.EqualTo(0x0000));
-            Assert.That(this.cpu.Overflow, Is.EqualTo(0x0));
         }
 
         [Test]

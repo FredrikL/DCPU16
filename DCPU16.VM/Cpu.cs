@@ -316,11 +316,11 @@ namespace DCPU16.VM
                         break;
 
                     case 0x5:
-                        this.Div(ins.a, ins.b);
+                        DoMathOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x / y), (x, y) => (ushort)(((x << 16) / y) & 0xffff), (y) => y != 0, () => this.overflow = 0);
                         break;
 
                     case 0x6:
-                        this.Mod(ins.a, ins.b);
+                        DoMathOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x % y), (x, y) => 0, (y) => y != 0, () => 0);
                         break;
 
                     case 0x7:
@@ -403,29 +403,14 @@ namespace DCPU16.VM
             destination(op(values.Item1, values.Item2));
         }
 
-        private void Mod(byte a, byte b)
+        private void DoMathOp(Tuple<ushort, ushort> values, Action<ushort> destination, Func<ushort, ushort, ushort> op, Func<ushort, ushort, ushort> overflowOp, Func<ushort, bool> opCondition, Func<ushort> noConditionOp)
         {
-            var values = ResolveSources(a, b);
-            var dest = GetDestination(a);
-
-            if(values.Item2 == 0)               
-                dest(0);
-            else
-                dest((ushort) (values.Item1 % values.Item2));
-        }
-
-        private void Div(byte a, byte b)
-        {
-            var values = ResolveSources(a, b);
-            var dest = GetDestination(a);
-
-            if (values.Item2 == 0)
-                dest(this.overflow = 0);
-            else
+            if (opCondition(values.Item2))
             {
-                this.overflow = (ushort)(((values.Item1 << 16) / values.Item2) & 0xffff);
-                dest((ushort)(values.Item1 / values.Item2));
+                DoMathOp(values, destination, op, overflowOp);
             }
+            else
+                destination(noConditionOp());
         }
 
         private void Push(ushort value)
