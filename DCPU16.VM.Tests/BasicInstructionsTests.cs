@@ -95,7 +95,7 @@ namespace DCPU16.VM.Tests
             this.cpu.Run();
 
             Assert.That(this.registers.A, Is.EqualTo(0x0040));
-            Assert.That(this.cpu.Overflow, Is.EqualTo(0x0));
+            Assert.That(this.registers.OverFlow, Is.EqualTo(0x0));
         }
 
         [Test]
@@ -109,7 +109,7 @@ namespace DCPU16.VM.Tests
             this.cpu.Run();
 
             Assert.That(this.registers.A, Is.EqualTo(0x0004));
-            Assert.That(this.cpu.Overflow, Is.EqualTo(0x0));
+            Assert.That(this.registers.OverFlow, Is.EqualTo(0x0));
         }
 
         [Test]

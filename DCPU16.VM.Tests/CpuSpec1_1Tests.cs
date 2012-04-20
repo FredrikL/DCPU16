@@ -82,7 +82,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.ProgramCounter, Is.EqualTo(0x000a)); 
+            Assert.That(this.registers.ProgramCounter, Is.EqualTo(0x000a)); 
         }
 
         [Test]
@@ -185,7 +185,7 @@ namespace DCPU16.VM.Tests
             this.cpu.Run();
 
             Assert.That(this.registers.I, Is.EqualTo(0x0));
-            Assert.That(this.cpu.ProgramCounter, Is.EqualTo(0x13));
+            Assert.That(this.registers.ProgramCounter, Is.EqualTo(0x13));
         }
 
         [Test]
@@ -232,7 +232,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.ProgramCounter, Is.EqualTo(0x18));
+            Assert.That(this.registers.ProgramCounter, Is.EqualTo(0x18));
         }
 
         [Test]
@@ -257,8 +257,8 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.StackPointer, Is.EqualTo(0xfffe));
-            Assert.That(this.cpu.Ram[this.cpu.StackPointer], Is.EqualTo(0x16));
+            Assert.That(this.registers.StackPointer, Is.EqualTo(0xfffe));
+            Assert.That(this.cpu.Ram[this.registers.StackPointer], Is.EqualTo(0x16));
         }
 
         [Test]
@@ -311,8 +311,8 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.StackPointer, Is.EqualTo(0xffff));
-            Assert.That(this.cpu.ProgramCounter, Is.EqualTo(0x1a));
+            Assert.That(this.registers.StackPointer, Is.EqualTo(0xffff));
+            Assert.That(this.registers.ProgramCounter, Is.EqualTo(0x1a));
         }
 
         [Test, Ignore("Infinite loop in your tdd")]

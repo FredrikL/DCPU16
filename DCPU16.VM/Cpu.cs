@@ -9,10 +9,6 @@ namespace DCPU16.VM
 
         private ushort[] ram = new ushort[0x10000];
 
-        private ushort programCounter = 0x0;
-        private ushort stackPointer = 0xffff;
-        private ushort overflow = 0x0;
-
         private bool skipNext = false;
         private bool programCounterManupulated = false;
 
@@ -21,26 +17,14 @@ namespace DCPU16.VM
             get { return this.ram; }
         }
 
-        public ushort ProgramCounter { get { return this.programCounter; } }
-        public ushort StackPointer { get { return this.stackPointer; } }
-        public ushort Overflow { get { return this.overflow; } }
-
         public Cpu(IRegisters registers)
         {
             this.registers = registers;
         }
 
-        private void Reset()
-        {
-            this.programCounter = 0x0;
-            this.stackPointer = 0xffff;
-            this.overflow = 0x0;
-            this.registers.Reset();
-        }
-
         public void LoadProgram(ushort[] program)
         {
-            this.Reset();
+            this.registers.Reset();
             program.CopyTo(ram, 0);
         }
 
@@ -48,8 +32,8 @@ namespace DCPU16.VM
         {
             var ins = GetInstruction();
             // determine if we should advance programcounter 1 or 2 additional steps
-            if (this.skipValue.SkipValue(ins.a)) this.programCounter++;
-            if (this.skipValue.SkipValue(ins.b)) this.programCounter++;
+            if (this.skipValue.SkipValue(ins.a)) this.registers.ProgramCounter++;
+            if (this.skipValue.SkipValue(ins.b)) this.registers.ProgramCounter++;
         }
 
         private Func<ushort> GetSource(byte value, int offset  = 0)
@@ -96,52 +80,52 @@ namespace DCPU16.VM
                     return () => this.ram[this.registers.J];
 
                 case 0x10:
-                    val = this.ram[this.programCounter+offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return () => this.ram[val + this.registers.A];
                 case 0x11:
-                    val = this.ram[this.programCounter + offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return () => this.ram[val + this.registers.B];
                 case 0x12:
-                    val = this.ram[this.programCounter + offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return () => this.ram[val + this.registers.C];
                 case 0x13:
-                    val = this.ram[this.programCounter + offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return () => this.ram[val + this.registers.X];
                 case 0x14:
-                    val = this.ram[this.programCounter + offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return () => this.ram[val + this.registers.Y];
                 case 0x15:
-                    val = this.ram[this.programCounter + offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return () => this.ram[val + this.registers.Z];
                 case 0x16:
-                    val = this.ram[this.programCounter + offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return () => this.ram[val + this.registers.I];
                 case 0x17:
-                    val = this.ram[this.programCounter + offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return () => this.ram[val + this.registers.J];
 
 
                 case 0x18:
-                    return () => this.ram[this.stackPointer++];
+                    return () => this.ram[this.registers.StackPointer++];
 
                 case 0x19:
-                    return () => this.ram[this.stackPointer];
+                    return () => this.ram[this.registers.StackPointer];
 
                 case 0x1b:
-                    return () => this.programCounter;
+                    return () => this.registers.StackPointer;
 
                 case 0x1c:
-                    return () => this.programCounter;
+                    return () => this.registers.ProgramCounter;
 
                 case 0x1d:
-                    return () => this.overflow;
+                    return () => this.registers.OverFlow;
 
                 case 0x1e:
-                    val = this.ram[this.programCounter+offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return () => this.ram[val];
 
                 case 0x1f:
-                    val = this.ram[this.programCounter+offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return () => val;             
 
                 default:
@@ -192,49 +176,49 @@ namespace DCPU16.VM
                     return v => this.ram[this.registers.J] = v;
 
                 case 0x10:
-                    val = this.ram[this.programCounter+offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return v => this.ram[val + this.registers.A] = v;
                 case 0x11:
-                    val = this.ram[this.programCounter + offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return v => this.ram[val + this.registers.B] = v;
                 case 0x12:
-                    val = this.ram[this.programCounter + offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return v => this.ram[val + this.registers.C] = v;
                 case 0x13:
-                    val = this.ram[this.programCounter + offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return v => this.ram[val + this.registers.X] = v;
                 case 0x14:
-                    val = this.ram[this.programCounter + offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return v => this.ram[val + this.registers.Y] = v;
                 case 0x15:
-                    val = this.ram[this.programCounter + offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return v => this.ram[val + this.registers.Z] = v;
                 case 0x16:
-                    val = this.ram[this.programCounter + offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return v => this.ram[val + this.registers.I] = v;
                 case 0x17:
-                    val = this.ram[this.programCounter + offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return v => this.ram[val + this.registers.J] = v;
 
                 case 0x1a:
-                    return v => this.ram[--this.stackPointer] = v;
+                    return v => this.ram[--this.registers.StackPointer] = v;
 
                 case 0x1b:
-                    return v => this.stackPointer = v;
+                    return v => this.registers.StackPointer = v;
 
                 case 0x1c:
                     this.programCounterManupulated = true;
-                    return v => this.programCounter = v;
+                    return v => this.registers.ProgramCounter = v;
 
                 case 0x1d:
-                    return v => this.overflow = v;
+                    return v => this.registers.OverFlow = v;
 
                 case 0x1e:
-                    val = this.ram[this.programCounter+offset];
+                    val = this.ram[this.registers.ProgramCounter + offset];
                     return v => this.ram[val] = v;
 
                 case 0x1f:
-                    return v => this.ram[this.programCounter + offset] = v;
+                    return v => this.ram[this.registers.ProgramCounter + offset] = v;
 
                 default:
                     throw new NotImplementedException("GetDestination");
@@ -243,7 +227,7 @@ namespace DCPU16.VM
 
         private Instruction GetInstruction()
         {
-            ushort word = ram[this.programCounter];
+            ushort word = ram[this.registers.ProgramCounter];
             byte instruction = (byte)(0xf & word);
             byte a = (byte)(0x3f & (word >> 0x4));
             byte b = (byte)(0x3f & (word >> 0xa));
@@ -298,7 +282,7 @@ namespace DCPU16.VM
                         break;
 
                     case 0x5:
-                        DoMathOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x / y), (x, y) => (ushort)(((x << 16) / y) & 0xffff), (y) => y != 0, () => this.overflow = 0);
+                        DoMathOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x / y), (x, y) => (ushort)(((x << 16) / y) & 0xffff), (y) => y != 0, () => this.registers.OverFlow = 0);
                         break;
 
                     case 0x6:
@@ -349,7 +333,7 @@ namespace DCPU16.VM
                     // in case we're using jsr don't increment programcounter here
                     // it's at the correct position
                     SkipNextInstruction();
-                    this.programCounter++;                    
+                    this.registers.ProgramCounter++;                    
                 }
                 else
                     this.programCounterManupulated = false;
@@ -381,7 +365,7 @@ namespace DCPU16.VM
 
         private void DoMathOp(Tuple<ushort, ushort> values, Action<ushort> destination, Func<ushort, ushort, ushort> op, Func<ushort, ushort, ushort> overflowOp)
         {
-            this.overflow = overflowOp(values.Item1, values.Item2);
+            this.registers.OverFlow = overflowOp(values.Item1, values.Item2);
             destination(op(values.Item1, values.Item2));
         }
 
@@ -397,7 +381,7 @@ namespace DCPU16.VM
 
         private void Push(ushort value)
         {
-            this.ram[--this.stackPointer] = value;
+            this.ram[--this.registers.StackPointer] = value;
         }
 
         private void Jsr(byte a)
@@ -406,8 +390,8 @@ namespace DCPU16.VM
             if (this.skipValue.SkipValue(a))
                 skipcount++;
             var value = GetSource(a, skipcount)();
-            this.Push((ushort)(this.programCounter + skipcount + 1)); // push locaion of next instruction
-            this.programCounter = value;
+            this.Push((ushort)(this.registers.ProgramCounter + skipcount + 1)); // push locaion of next instruction
+            this.registers.ProgramCounter = value;
             this.programCounterManupulated = true;
         }
 

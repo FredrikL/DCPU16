@@ -87,7 +87,7 @@ namespace DCPU16.VM.Tests
 
                 Assert.That(this.registers.Registers[i], Is.EqualTo(i + 1));
                 Assert.That(this.cpu.Ram[0x1000+(i+1)], Is.EqualTo(0x0));
-                Assert.That(this.cpu.ProgramCounter, Is.EqualTo(0x8));
+                Assert.That(this.registers.ProgramCounter, Is.EqualTo(0x8));
             }
         }
     }

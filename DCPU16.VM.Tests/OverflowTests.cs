@@ -24,7 +24,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.Overflow, Is.EqualTo(0xffff));
+            Assert.That(this.registers.OverFlow, Is.EqualTo(0xffff));
         }
 
         [Test]
@@ -38,7 +38,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.Overflow, Is.EqualTo(0x0001));
+            Assert.That(this.registers.OverFlow, Is.EqualTo(0x0001));
         }
 
         [Test]
@@ -52,7 +52,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.Overflow, Is.EqualTo(0xfffe));
+            Assert.That(this.registers.OverFlow, Is.EqualTo(0xfffe));
         }
 
         [Test]
@@ -66,7 +66,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.Overflow, Is.EqualTo(0x0));
+            Assert.That(this.registers.OverFlow, Is.EqualTo(0x0));
             Assert.That(this.registers.A, Is.EqualTo(0x0));
         }
 
@@ -82,7 +82,7 @@ namespace DCPU16.VM.Tests
             this.cpu.Run();
 
             Assert.That(this.registers.A, Is.EqualTo(0x0000));
-            Assert.That(this.cpu.Overflow, Is.EqualTo(0x2));
+            Assert.That(this.registers.OverFlow, Is.EqualTo(0x2));
         }
 
         [Test]
@@ -124,7 +124,7 @@ namespace DCPU16.VM.Tests
             this.cpu.Run();
 
             Assert.That(this.registers.A, Is.EqualTo(0xfff0));
-            Assert.That(this.cpu.Overflow, Is.EqualTo(0x000f));
+            Assert.That(this.registers.OverFlow, Is.EqualTo(0x000f));
         }
 
         [Test]
@@ -138,7 +138,7 @@ namespace DCPU16.VM.Tests
             this.cpu.Run();
 
             Assert.That(this.registers.A, Is.EqualTo(0x0000));
-            Assert.That(this.cpu.Overflow, Is.EqualTo(0xf000));
+            Assert.That(this.registers.OverFlow, Is.EqualTo(0xf000));
         }
     }
 }
