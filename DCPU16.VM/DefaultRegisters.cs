@@ -2,7 +2,15 @@ namespace DCPU16.VM
 {
     public class DefaultRegisters : IRegisters
     {
-        public ushort ProgramCounter { get; set; }
+        private ushort programCounter;
+        public ushort ProgramCounter
+        {
+            get { return programCounter; }
+            set { 
+                programCounter = value;
+            }
+        }
+
         public ushort StackPointer { get; set; }
         public ushort OverFlow { get; set; }
         public ushort A { get; set; }
@@ -19,8 +27,11 @@ namespace DCPU16.VM
         public void Reset()
         {
             this.ProgramCounter = 0x0;
+            this.ProgramCounterManipulated = false;
             this.StackPointer = 0xffff;
             this.OverFlow = 0x0;
         }
+
+        public bool ProgramCounterManipulated { get; set; }
     }
 }

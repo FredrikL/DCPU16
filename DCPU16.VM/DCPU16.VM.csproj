@@ -43,6 +43,8 @@
     <Compile Include="Cpu.cs" />
     <Compile Include="DefaultRegisters.cs" />
     <Compile Include="DefaultSkipValue.cs" />
+    <Compile Include="DestinationProvider.cs" />
+    <Compile Include="IDestinationProvider.cs" />
     <Compile Include="Instruction.cs" />
     <Compile Include="IRam.cs" />
     <Compile Include="IRegisters.cs" />

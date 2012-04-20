@@ -18,5 +18,6 @@ namespace DCPU16.VM
         ushort[] Registers { get; }
 
         void Reset();
+        bool ProgramCounterManipulated { get; set; }
     }
 }
