@@ -6,11 +6,12 @@ namespace DCPU16.VM.Tests
     public class ValueAsSourceOrDestinationTests
     {
         private Cpu cpu;
+        private DefaultRegisters registers = new DefaultRegisters();
 
         [SetUp]
         public void Setup()
         {
-            this.cpu = new Cpu();
+            this.cpu = new Cpu(registers);
         }
 
         [Test]
@@ -30,7 +31,7 @@ namespace DCPU16.VM.Tests
 
                 this.cpu.Run();
 
-                Assert.That(this.cpu.Registers[i-8], Is.EqualTo(0xdead));
+                Assert.That(this.registers.Registers[i - 8], Is.EqualTo(0xdead));
                 Assert.That(this.cpu.Ram[0xdead], Is.EqualTo(0xdead));
             }
         }
@@ -48,7 +49,7 @@ namespace DCPU16.VM.Tests
                 this.cpu.LoadProgram(program);                
                 this.cpu.Run();
 
-                Assert.That(this.cpu.A, Is.EqualTo(i - 0x20));
+                Assert.That(this.registers.A, Is.EqualTo(i - 0x20));
             }
         }
 
@@ -66,7 +67,7 @@ namespace DCPU16.VM.Tests
                 this.cpu.LoadProgram(program);
                 this.cpu.Run();
 
-                Assert.That(this.cpu.Registers[i], Is.EqualTo(0xdead));
+                Assert.That(this.registers.Registers[i], Is.EqualTo(0xdead));
             }
         }
 
@@ -84,7 +85,7 @@ namespace DCPU16.VM.Tests
                 this.cpu.LoadProgram(program);
                 this.cpu.Run();
 
-                Assert.That(this.cpu.Registers[i], Is.EqualTo(i+1));
+                Assert.That(this.registers.Registers[i], Is.EqualTo(i + 1));
                 Assert.That(this.cpu.Ram[0x1000+(i+1)], Is.EqualTo(0x0));
                 Assert.That(this.cpu.ProgramCounter, Is.EqualTo(0x8));
             }

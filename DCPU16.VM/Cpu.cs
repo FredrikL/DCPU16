@@ -5,11 +5,9 @@ namespace DCPU16.VM
     public class Cpu
     {
         private ISkipValue skipValue = new DefaultSkipValue();
+        private IRegisters registers;
 
         private ushort[] ram = new ushort[0x10000];
-
-        // registers
-        private ushort a, b, c, x, y, z, i, j;
 
         private ushort programCounter = 0x0;
         private ushort stackPointer = 0xffff;
@@ -23,37 +21,21 @@ namespace DCPU16.VM
             get { return this.ram; }
         }
 
-        public ushort A { get { return this.a; } }
-        public ushort B { get { return this.b; } }
-        public ushort C { get { return this.c; } }
-        public ushort X { get { return this.x; } }
-        public ushort Y { get { return this.y; } }
-        public ushort Z { get { return this.z; } }
-        public ushort I { get { return this.i; } }
-        public ushort J { get { return this.j; } }
-
-        public ushort[] Registers
-        {
-            get { return new ushort[] {a, b, c, x, y, z, i, j}; }
-        }
-
         public ushort ProgramCounter { get { return this.programCounter; } }
         public ushort StackPointer { get { return this.stackPointer; } }
         public ushort Overflow { get { return this.overflow; } }
+
+        public Cpu(IRegisters registers)
+        {
+            this.registers = registers;
+        }
 
         private void Reset()
         {
             this.programCounter = 0x0;
             this.stackPointer = 0xffff;
             this.overflow = 0x0;
-            this.a = 0x0;
-            this.b = 0x0;
-            this.c = 0x0;
-            this.x = 0x0;
-            this.y = 0x0;
-            this.z = 0x0;
-            this.i = 0x0;
-            this.j = 0x0;
+            this.registers.Reset();
         }
 
         public void LoadProgram(ushort[] program)
@@ -80,63 +62,63 @@ namespace DCPU16.VM
             switch(value)
             {            
                 case 0x00:
-                    return () => this.a;
+                    return () => this.registers.A;
                 case 0x01:
-                    return () => this.b;
+                    return () => this.registers.B;
                 case 0x02:
-                    return () => this.c;
+                    return () => this.registers.C;
                 case 0x03:
-                    return () => this.x;
+                    return () => this.registers.X;
                 case 0x04:
-                    return () => this.y;
+                    return () => this.registers.Y;
                 case 0x05:
-                    return () => this.z;
+                    return () => this.registers.Z;
                 case 0x06:
-                    return () => this.i;
+                    return () => this.registers.I;
                 case 0x07:
-                    return () => this.j;
+                    return () => this.registers.J;
 
                 case 0x08:
-                    return () => this.ram[this.a];
+                    return () => this.ram[this.registers.A];
                 case 0x09:
-                    return () => this.ram[this.b];
+                    return () => this.ram[this.registers.B];
                 case 0x0a:
-                    return () => this.ram[this.c];
+                    return () => this.ram[this.registers.C];
                 case 0x0b:
-                    return () => this.ram[this.x];
+                    return () => this.ram[this.registers.X];
                 case 0x0c:
-                    return () => this.ram[this.y];
+                    return () => this.ram[this.registers.Y];
                 case 0x0d:
-                    return () => this.ram[this.z];
+                    return () => this.ram[this.registers.Z];
                 case 0x0e:
-                    return () => this.ram[this.i];
+                    return () => this.ram[this.registers.I];
                 case 0x0f:
-                    return () => this.ram[this.j];
+                    return () => this.ram[this.registers.J];
 
                 case 0x10:
                     val = this.ram[this.programCounter+offset];
-                    return () => this.ram[val + this.a];
+                    return () => this.ram[val + this.registers.A];
                 case 0x11:
                     val = this.ram[this.programCounter + offset];
-                    return () => this.ram[val + this.b];
+                    return () => this.ram[val + this.registers.B];
                 case 0x12:
                     val = this.ram[this.programCounter + offset];
-                    return () => this.ram[val + this.c];
+                    return () => this.ram[val + this.registers.C];
                 case 0x13:
                     val = this.ram[this.programCounter + offset];
-                    return () => this.ram[val + this.x];
+                    return () => this.ram[val + this.registers.X];
                 case 0x14:
                     val = this.ram[this.programCounter + offset];
-                    return () => this.ram[val + this.y];
+                    return () => this.ram[val + this.registers.Y];
                 case 0x15:
                     val = this.ram[this.programCounter + offset];
-                    return () => this.ram[val + this.z];
+                    return () => this.ram[val + this.registers.Z];
                 case 0x16:
                     val = this.ram[this.programCounter + offset];
-                    return () => this.ram[val + this.i];
+                    return () => this.ram[val + this.registers.I];
                 case 0x17:
                     val = this.ram[this.programCounter + offset];
-                    return () => this.ram[val + this.a];
+                    return () => this.ram[val + this.registers.J];
 
 
                 case 0x18:
@@ -176,63 +158,63 @@ namespace DCPU16.VM
             switch(value)
             {
                 case 0x0:
-                    return v => this.a = v;
+                    return v => this.registers.A = v;
                 case 0x1:
-                    return v => this.b = v;
+                    return v => this.registers.B = v;
                 case 0x2:
-                    return v => this.c = v;
+                    return v => this.registers.C = v;
                 case 0x3:
-                    return v => this.x = v;
+                    return v => this.registers.X = v;
                 case 0x4:
-                    return v => this.y = v;
+                    return v => this.registers.Y = v;
                 case 0x5:
-                    return v => this.z = v;
+                    return v => this.registers.Z = v;
                 case 0x6:
-                    return v => this.i = v;
+                    return v => this.registers.I = v;
                 case 0x7:
-                    return v => this.j = v;
+                    return v => this.registers.J = v;
 
                 case 0x08:
-                    return v => this.ram[this.a] = v;
+                    return v => this.ram[this.registers.A] = v;
                 case 0x09:
-                    return v => this.ram[this.b] = v;
+                    return v => this.ram[this.registers.B] = v;
                 case 0x0a:
-                    return v => this.ram[this.c] = v;
+                    return v => this.ram[this.registers.C] = v;
                 case 0x0b:
-                    return v => this.ram[this.x] = v;
+                    return v => this.ram[this.registers.X] = v;
                 case 0x0c:
-                    return v => this.ram[this.y] = v;
+                    return v => this.ram[this.registers.Y] = v;
                 case 0x0d:
-                    return v => this.ram[this.z] = v;
+                    return v => this.ram[this.registers.Z] = v;
                 case 0x0e:
-                    return v => this.ram[this.i] = v;
+                    return v => this.ram[this.registers.I] = v;
                 case 0x0f:
-                    return v => this.ram[this.j] = v;
+                    return v => this.ram[this.registers.J] = v;
 
                 case 0x10:
                     val = this.ram[this.programCounter+offset];
-                    return v => this.ram[val + this.a] = v;
+                    return v => this.ram[val + this.registers.A] = v;
                 case 0x11:
                     val = this.ram[this.programCounter + offset];
-                    return v => this.ram[val + this.b] = v;
+                    return v => this.ram[val + this.registers.B] = v;
                 case 0x12:
                     val = this.ram[this.programCounter + offset];
-                    return v => this.ram[val + this.c] = v;
+                    return v => this.ram[val + this.registers.C] = v;
                 case 0x13:
                     val = this.ram[this.programCounter + offset];
-                    return v => this.ram[val + this.x] = v;
+                    return v => this.ram[val + this.registers.X] = v;
                 case 0x14:
                     val = this.ram[this.programCounter + offset];
-                    return v => this.ram[val + this.y] = v;
+                    return v => this.ram[val + this.registers.Y] = v;
                 case 0x15:
                     val = this.ram[this.programCounter + offset];
-                    return v => this.ram[val + this.z] = v;
+                    return v => this.ram[val + this.registers.Z] = v;
                 case 0x16:
                     val = this.ram[this.programCounter + offset];
-                    return v => this.ram[val + this.i] = v;
+                    return v => this.ram[val + this.registers.I] = v;
                 case 0x17:
                     val = this.ram[this.programCounter + offset];
-                    return v => this.ram[val + this.j] = v;
+                    return v => this.ram[val + this.registers.J] = v;
 
                 case 0x1a:
                     return v => this.ram[--this.stackPointer] = v;

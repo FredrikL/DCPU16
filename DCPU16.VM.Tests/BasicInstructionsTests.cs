@@ -6,11 +6,12 @@ namespace DCPU16.VM.Tests
     public class BasicInstructionsTests
     {
         private Cpu cpu;
+        private DefaultRegisters registers = new DefaultRegisters();
 
         [SetUp]
         public void Setup()
         {
-            this.cpu = new Cpu();
+            this.cpu = new Cpu(registers);
         }
 
         [Test]
@@ -24,7 +25,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.A, Is.EqualTo(0x02));
+            Assert.That(this.registers.A, Is.EqualTo(0x02));
         }
 
         [Test]
@@ -38,7 +39,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.A, Is.EqualTo(0x01));
+            Assert.That(this.registers.A, Is.EqualTo(0x01));
         }
 
         [Test]
@@ -52,7 +53,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.A, Is.EqualTo(0x06));
+            Assert.That(this.registers.A, Is.EqualTo(0x06));
         }
 
         [Test]
@@ -66,7 +67,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.A, Is.EqualTo(0x02));
+            Assert.That(this.registers.A, Is.EqualTo(0x02));
         }
 
         [Test]
@@ -80,7 +81,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.A, Is.EqualTo(0x01));
+            Assert.That(this.registers.A, Is.EqualTo(0x01));
         }
 
         [Test]
@@ -93,7 +94,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.A, Is.EqualTo(0x0040));
+            Assert.That(this.registers.A, Is.EqualTo(0x0040));
             Assert.That(this.cpu.Overflow, Is.EqualTo(0x0));
         }
 
@@ -107,7 +108,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.A, Is.EqualTo(0x0004));
+            Assert.That(this.registers.A, Is.EqualTo(0x0004));
             Assert.That(this.cpu.Overflow, Is.EqualTo(0x0));
         }
 
@@ -122,7 +123,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.A, Is.EqualTo(0x2));
+            Assert.That(this.registers.A, Is.EqualTo(0x2));
         }
 
         [Test]
@@ -136,7 +137,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.C, Is.EqualTo(0x3));
+            Assert.That(this.registers.C, Is.EqualTo(0x3));
         }
 
         [Test]
@@ -152,7 +153,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.Y, Is.EqualTo(0x3));
+            Assert.That(this.registers.Y, Is.EqualTo(0x3));
         }
 
         [Test]
@@ -167,7 +168,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.A, Is.EqualTo(0x4));
+            Assert.That(this.registers.A, Is.EqualTo(0x4));
         }
 
         [Test]
@@ -182,7 +183,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.A, Is.EqualTo(0x1));
+            Assert.That(this.registers.A, Is.EqualTo(0x1));
         }
 
         [Test]
@@ -197,7 +198,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.A, Is.EqualTo(0x4));
+            Assert.That(this.registers.A, Is.EqualTo(0x4));
         }
 
         [Test]
@@ -212,7 +213,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.A, Is.EqualTo(0x1));
+            Assert.That(this.registers.A, Is.EqualTo(0x1));
         }
 
         [Test]
@@ -227,7 +228,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.A, Is.EqualTo(0x4));
+            Assert.That(this.registers.A, Is.EqualTo(0x4));
         }
 
         [Test]
@@ -242,7 +243,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.A, Is.EqualTo(0x1));
+            Assert.That(this.registers.A, Is.EqualTo(0x1));
         }
     }
 }
