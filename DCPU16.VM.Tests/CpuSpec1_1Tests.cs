@@ -12,12 +12,15 @@ namespace DCPU16.VM.Tests
         // based on example code in 1.1 spec
 
         private Cpu cpu;
-        private DefaultRegisters registers = new DefaultRegisters();
+        private DefaultRegisters registers;
+        private DefaultRam ram;
 
         [SetUp]
         public void Setup()
         {
-            this.cpu = new Cpu(registers);
+            registers = new DefaultRegisters();
+            ram = new DefaultRam();
+            this.cpu = new Cpu(registers, ram);
         }
 
         [Test]

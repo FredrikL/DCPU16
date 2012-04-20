@@ -44,6 +44,7 @@
     <Compile Include="DefaultRegisters.cs" />
     <Compile Include="DefaultSkipValue.cs" />
     <Compile Include="Instruction.cs" />
+    <Compile Include="IRam.cs" />
     <Compile Include="IRegisters.cs" />
     <Compile Include="ISkipValue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
