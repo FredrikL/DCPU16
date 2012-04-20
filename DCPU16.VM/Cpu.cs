@@ -209,7 +209,7 @@ namespace DCPU16.VM
             if (this.skipValue.SkipValue(a))
                 skipcount++;
             var value = GetSource(a, skipcount)();
-            this.Push((ushort)(this.registers.ProgramCounter + skipcount + 1)); // push locaion of next instruction
+            this.Push((ushort)(this.registers.ProgramCounter + skipcount + 1)); // push location of next instruction
             this.registers.ProgramCounter = value;
             this.registers.ProgramCounterManipulated = true;
         }
