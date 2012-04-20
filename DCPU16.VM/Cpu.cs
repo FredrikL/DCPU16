@@ -11,11 +11,6 @@ namespace DCPU16.VM
         private bool skipNext = false;
         private bool programCounterManupulated = false;
 
-        public ushort[] Ram
-        {
-            get { return this.ram.Ram; }
-        }
-
         public Cpu(IRegisters registers, IRam ram)
         {
             this.registers = registers;

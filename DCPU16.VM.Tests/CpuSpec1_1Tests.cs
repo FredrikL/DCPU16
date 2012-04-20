@@ -30,8 +30,8 @@ namespace DCPU16.VM.Tests
 
             this.cpu.LoadProgram(program);
 
-            Assert.AreEqual(0x7c01, this.cpu.Ram[0]);
-            Assert.AreEqual(0x0030, this.cpu.Ram[1]);
+            Assert.AreEqual(0x7c01, this.ram.Ram[0]);
+            Assert.AreEqual(0x0030, this.ram.Ram[1]);
         }
 
         [Test]
@@ -55,7 +55,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.Ram[0x1000], Is.EqualTo(0x20));
+            Assert.That(this.ram.Ram[0x1000], Is.EqualTo(0x20));
         }
 
         [Test]
@@ -126,8 +126,8 @@ namespace DCPU16.VM.Tests
         [Test]
         public void ShouldBeAbleToSetOffsetWithValueFromI()
         {
-            this.cpu.Ram[0x2000] = 0xff;
-            this.cpu.Ram[0x2000 + 10] = 0x00;
+            this.ram.Ram[0x2000] = 0xff;
+            this.ram.Ram[0x2000 + 10] = 0x00;
 
             ushort[] program = {
                                    0x7c01, 0x0030,
@@ -144,7 +144,7 @@ namespace DCPU16.VM.Tests
 
             this.cpu.Run();
 
-            Assert.That(this.cpu.Ram[0x2000 + 10], Is.EqualTo(0xff));
+            Assert.That(this.ram.Ram[0x2000 + 10], Is.EqualTo(0xff));
         }
 
         [Test]
@@ -261,7 +261,7 @@ namespace DCPU16.VM.Tests
             this.cpu.Run();
 
             Assert.That(this.registers.StackPointer, Is.EqualTo(0xfffe));
-            Assert.That(this.cpu.Ram[this.registers.StackPointer], Is.EqualTo(0x16));
+            Assert.That(this.ram.Ram[this.registers.StackPointer], Is.EqualTo(0x16));
         }
 
         [Test]

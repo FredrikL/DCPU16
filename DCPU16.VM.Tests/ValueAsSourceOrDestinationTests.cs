@@ -34,7 +34,7 @@ namespace DCPU16.VM.Tests
                 this.cpu.Run();
 
                 Assert.That(this.registers.Registers[i - 8], Is.EqualTo(0xdead));
-                Assert.That(this.cpu.Ram[0xdead], Is.EqualTo(0xdead));
+                Assert.That(this.ram.Ram[0xdead], Is.EqualTo(0xdead));
             }
         }
 
@@ -88,7 +88,7 @@ namespace DCPU16.VM.Tests
                 this.cpu.Run();
 
                 Assert.That(this.registers.Registers[i], Is.EqualTo(i + 1));
-                Assert.That(this.cpu.Ram[0x1000+(i+1)], Is.EqualTo(0x0));
+                Assert.That(this.ram.Ram[0x1000 + (i + 1)], Is.EqualTo(0x0));
                 Assert.That(this.registers.ProgramCounter, Is.EqualTo(0x8));
             }
         }
