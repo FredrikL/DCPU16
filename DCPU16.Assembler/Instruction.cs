@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace DCPU16.Assembler
 {
-    public class Instruction
+    public class Instruction : IInstruction
     {
         private readonly ushort opcode;
         private readonly ushort[] additional;
@@ -25,7 +25,7 @@ namespace DCPU16.Assembler
             IsResolved = (this.labels == null || this.labels.Length ==0);
         }
 
-        public void ResolveLables(Instruction[] instructions)
+        public void ResolveLables(IInstruction[] instructions)
         {
             if (IsResolved) return;
             int pos = 0;

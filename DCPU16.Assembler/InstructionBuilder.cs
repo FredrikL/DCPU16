@@ -46,7 +46,7 @@ namespace DCPU16.Assembler
             return string.Empty;
         }
 
-        public Instruction BuildInstruction(dynamic instruction)
+        public IInstruction BuildInstruction(dynamic instruction)
         {
             var ret = new List<ushort>();
             ret.Add(opCodes[instruction.opcode]);
@@ -83,7 +83,7 @@ namespace DCPU16.Assembler
             return string.Empty;
         }
 
-        public Instruction BuildExtendedInstruction(ushort opCode, dynamic instruction)
+        public IInstruction BuildExtendedInstruction(ushort opCode, dynamic instruction)
         {
             var ret = new List<ushort>();
             ret.Add((ushort)(opCode << 4));
