@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -9,11 +8,6 @@ using Piglet.Parser.Configuration.Fluent;
 
 namespace DCPU16.Assembler
 {
-    public enum OpCode
-    {
-        SET,ADD,SUB,MUL,DIV,MOD,SHL,SHR,AND,BOR,XOR,IFE,IFN,IFG,IFB
-    }
-
     public class AssemblerImpl
     {
         private IInstructionBuilder instructionBuilder = new InstructionBuilder();
@@ -21,29 +15,28 @@ namespace DCPU16.Assembler
         private IValueMap valueMap = new ValueMap();
         private Dictionary<string, OpCode> opCodes = new Dictionary<string, OpCode>();
 
-        private IExpressionConfigurator basicRegister, registerPointer, nextWordAndRegister, nextWord, hex, nextWordLiteralDecimal, constants, label,
-            nextWordAndRegisterUsingLabel;
+        private IExpressionConfigurator basicRegister, registerPointer, instructionsToResolve, hex, label;
 
-       public AssemblerImpl()
-       {
-           opCodes.Add("SET", OpCode.SET);
-           opCodes.Add("ADD", OpCode.ADD);
-           opCodes.Add("SUB", OpCode.SUB);
-           opCodes.Add("MUL", OpCode.MUL);
-           opCodes.Add("DIV", OpCode.DIV);
-           opCodes.Add("MOD", OpCode.MOD);
-           opCodes.Add("SHL", OpCode.SHL);
-           opCodes.Add("SHR", OpCode.SHR);
-           opCodes.Add("AND", OpCode.AND);
-           opCodes.Add("BOR", OpCode.BOR);
-           opCodes.Add("XOR", OpCode.XOR);
-           opCodes.Add("IFE", OpCode.IFE);
-           opCodes.Add("IFN", OpCode.IFN);
-           opCodes.Add("IFG", OpCode.IFG);
-           opCodes.Add("IFB", OpCode.IFB);
-       }
+        public AssemblerImpl()
+        {
+            opCodes.Add("SET", OpCode.SET);
+            opCodes.Add("ADD", OpCode.ADD);
+            opCodes.Add("SUB", OpCode.SUB);
+            opCodes.Add("MUL", OpCode.MUL);
+            opCodes.Add("DIV", OpCode.DIV);
+            opCodes.Add("MOD", OpCode.MOD);
+            opCodes.Add("SHL", OpCode.SHL);
+            opCodes.Add("SHR", OpCode.SHR);
+            opCodes.Add("AND", OpCode.AND);
+            opCodes.Add("BOR", OpCode.BOR);
+            opCodes.Add("XOR", OpCode.XOR);
+            opCodes.Add("IFE", OpCode.IFE);
+            opCodes.Add("IFN", OpCode.IFN);
+            opCodes.Add("IFG", OpCode.IFG);
+            opCodes.Add("IFB", OpCode.IFB);
+        }
 
-        public ushort[] GetAsUshorts(byte[] input)
+        private static ushort[] GetAsUshorts(byte[] input)
         {
             List<ushort> ret = new List<ushort>();
             foreach (var b in input)
@@ -52,7 +45,7 @@ namespace DCPU16.Assembler
             }
             return ret.ToArray();
         }
-     
+
         public IInstruction ParseData(dynamic items)
         {
             foreach (dynamic item in items.values)
@@ -141,9 +134,9 @@ namespace DCPU16.Assembler
 
             register.IsMadeUp.By(basicRegister).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
                 .By(registerPointer).As("Name").WhenFound(f => (ushort)(this.valueMap[f.Name] + 0x8)).Or
-                .By(nextWordAndRegister).As("Instr").WhenFound(f => this.instructionResolver.Resolve(f.Instr)).Or
+                .By(instructionsToResolve).As("Instr").WhenFound(f => this.instructionResolver.Resolve(f.Instr)).Or
                 .By(hex).As("Instr").WhenFound(f => this.instructionResolver.Resolve(f.Instr)).Or
-                .By(label).As("Label").WhenFound(f => f.Label); //.Or
+                .By(label).As("Label").WhenFound(f => f.Label);
             return register;
         }
 
@@ -155,8 +148,8 @@ namespace DCPU16.Assembler
             registerPointer = config.Expression();
             registerPointer.ThatMatches(@"\[[ABCXYZIJ]\]").AndReturns(f => f.Substring(1, 1));
 
-            nextWordAndRegister = config.Expression();
-            nextWordAndRegister.ThatMatches(@"\[0x[0-9a-fA-F]{1:4}\+[ABCXYZIJ]\]|\[0x[0-9a-fA-F]{1:4}\]|[0-9a-fA-F]{1:2}|\[\w+\+[ABCXYZIJ]\]").AndReturns(f => f);
+            instructionsToResolve = config.Expression();
+            instructionsToResolve.ThatMatches(@"\[0x[0-9a-fA-F]{1:4}\+[ABCXYZIJ]\]|\[0x[0-9a-fA-F]{1:4}\]|[0-9a-fA-F]{1:2}|\[\w+\+[ABCXYZIJ]\]").AndReturns(f => f);
 
             hex = config.Expression();
             hex.ThatMatches(@"0x[0-9a-fA-F]{1:4}").AndReturns(f => f);

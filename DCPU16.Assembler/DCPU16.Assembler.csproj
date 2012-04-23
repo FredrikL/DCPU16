@@ -57,6 +57,7 @@
     <Compile Include="InstructionBuilder.cs" />
     <Compile Include="InstructionResolver.cs" />
     <Compile Include="IValueMap.cs" />
+    <Compile Include="OpCode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RawData.cs" />
     <Compile Include="ValueMap.cs" />
