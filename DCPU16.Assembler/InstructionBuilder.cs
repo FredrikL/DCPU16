@@ -41,6 +41,13 @@ namespace DCPU16.Assembler
                 ret.Add(0x0); // placeholder
                 return instruction.values[second ? 1 : 0] as string;
             }
+            else if (instruction.values[second ? 1 : 0] is Tuple<ushort, string>)
+            {
+                var instone = instruction.values[second ? 1 : 0] as Tuple<ushort, string>;
+                ret[0] = (ushort)(ret[0] + (instone.Item1 << (second ? 10 : 4)));
+                ret.Add(0x0); // placeholder
+                return instone.Item2;
+            }
             else
                 ret[0] = (ushort)(ret[0] + (instruction.values[second ? 1 : 0] << (second ? 10 : 4)));
             return string.Empty;

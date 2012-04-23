@@ -46,7 +46,16 @@ namespace DCPU16.Assembler
                     return (ushort) (second + 0x20);
 
                 return new Tuple<ushort, ushort>(first, second);
-            }   
+            }
+
+            match = Regex.Match(statement, @"\[(\w+)\+([ABCXYZIJ])\]", RegexOptions.Compiled);
+            if (match.Success)
+            {
+                ushort value = (ushort)(this.valueMap[match.Groups[2].Value] + 0x10);
+                string label = match.Groups[1].Value;
+
+                return new Tuple<ushort, string>(value, label);
+            }
             throw new ArgumentException("Que?");
         }
     }

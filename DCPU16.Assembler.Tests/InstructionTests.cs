@@ -140,5 +140,19 @@ namespace DCPU16.Assembler.Tests
             Assert.That(result[26], Is.EqualTo(0x7dc1));
             Assert.That(result[27], Is.EqualTo(0x001a));
         } 
+
+        [Test]
+        public void ShouldSupportLabelInSet()
+        {
+            string asm = @"    BOR [A], [hello+I]
+                        :hello DAT 0xdead";
+                               
+
+            var result = this.assembler.Assemble(asm).ToArray();
+
+            Assert.That(result[0], Is.EqualTo(0x588a));
+            Assert.That(result[1], Is.EqualTo(0x0002));
+            Assert.That(result[2], Is.EqualTo(0xdead));
+        }
     }
 }

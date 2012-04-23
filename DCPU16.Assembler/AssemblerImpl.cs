@@ -21,6 +21,9 @@ namespace DCPU16.Assembler
         private IValueMap valueMap = new ValueMap();
         private Dictionary<string, OpCode> opCodes = new Dictionary<string, OpCode>();
 
+        private IExpressionConfigurator basicRegister, registerPointer, nextWordAndRegister, nextWord, hex, nextWordLiteralDecimal, constants, label,
+            nextWordAndRegisterUsingLabel;
+
        public AssemblerImpl()
        {
            opCodes.Add("SET", OpCode.SET);
@@ -125,12 +128,10 @@ namespace DCPU16.Assembler
             var datarules = config.Rule();
 
             datarules.IsMadeUp.By(config.QuotedString).As("String").WhenFound(f => f).Or
-                .By(Hex).As("Binary").WhenFound(f => f);
+                .By(hex).As("Binary").WhenFound(f => f);
 
             return datarules;
-        }
-
-        private IExpressionConfigurator basicRegister, registerPointer, nextWordAndRegister, nextWord, Hex, nextWordLiteralDecimal, constants, label;
+        }        
 
         private IRule GetRegisterMap(IFluentParserConfigurator config)
         {
@@ -141,35 +142,24 @@ namespace DCPU16.Assembler
             register.IsMadeUp.By(basicRegister).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
                 .By(registerPointer).As("Name").WhenFound(f => (ushort)(this.valueMap[f.Name] + 0x8)).Or
                 .By(nextWordAndRegister).As("Instr").WhenFound(f => this.instructionResolver.Resolve(f.Instr)).Or
-                .By(nextWord).As("Instr").WhenFound(f => this.instructionResolver.Resolve(f.Instr)).Or
-                .By(Hex).As("Instr").WhenFound(f => this.instructionResolver.Resolve(f.Instr)).Or
-                .By(nextWordLiteralDecimal).As("Instr").WhenFound(f => this.instructionResolver.Resolve(f.Instr)).Or
-                .By(constants).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
-                .By(label).As("Label").WhenFound(f => f.Label);
+                .By(hex).As("Instr").WhenFound(f => this.instructionResolver.Resolve(f.Instr)).Or
+                .By(label).As("Label").WhenFound(f => f.Label); //.Or
             return register;
         }
 
         private void SetupExpressions(IFluentParserConfigurator config)
         {
             basicRegister = config.Expression();
-            basicRegister.ThatMatches(@"([ABCXYZIJ])").AndReturns(f => f);
+            basicRegister.ThatMatches(@"[ABCXYZIJ]|PC|SP|O|POP|PEEK|PUSH").AndReturns(f => f);
 
             registerPointer = config.Expression();
-            registerPointer.ThatMatches(@"\[([ABCXYZIJ])\]").AndReturns(f => f.Substring(1, 1));
+            registerPointer.ThatMatches(@"\[[ABCXYZIJ]\]").AndReturns(f => f.Substring(1, 1));
 
             nextWordAndRegister = config.Expression();
-            nextWordAndRegister.ThatMatches(@"\[0x\d{1:4}\+[ABCXYZIJ]\]").AndReturns(f => f);
+            nextWordAndRegister.ThatMatches(@"\[0x[0-9a-fA-F]{1:4}\+[ABCXYZIJ]\]|\[0x[0-9a-fA-F]{1:4}\]|[0-9a-fA-F]{1:2}|\[\w+\+[ABCXYZIJ]\]").AndReturns(f => f);
 
-            nextWord = config.Expression();
-            nextWord.ThatMatches(@"\[0x\d{1:4}\]").AndReturns(f => f);
-
-            Hex = config.Expression();
-            Hex.ThatMatches(@"0x\d{1:4}").AndReturns(f => f);
-            nextWordLiteralDecimal = config.Expression();
-            nextWordLiteralDecimal.ThatMatches(@"\d{1:2}").AndReturns(f => f);
-
-            constants = config.Expression();
-            constants.ThatMatches("PC|SP|O|POP|PEEK|PUSH").AndReturns(f => f);
+            hex = config.Expression();
+            hex.ThatMatches(@"0x[0-9a-fA-F]{1:4}").AndReturns(f => f);
         }
     }
 }
