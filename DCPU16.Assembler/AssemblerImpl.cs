@@ -76,14 +76,18 @@ namespace DCPU16.Assembler
             
             var register = GetRegisterMap(config);
             var dataRules = DataParts(config);
+
+            var comment = config.Expression();
+            comment.ThatMatches(@";\w+").AndReturns(f => null);
             
-            var label = config.Expression();
-            label.ThatMatches(@":\w+").AndReturns(f => f.Substring(1));
+            var labelAnchor = config.Expression();
+            labelAnchor.ThatMatches(@":\w+").AndReturns(f => f.Substring(1));
 
             var labelWrapper = config.Rule();
-            labelWrapper.IsMadeUp.By(label).As("label").Followed.By(instructions).As("ins").
+            labelWrapper.IsMadeUp.By(labelAnchor).As("label").Followed.By(instructions).As("ins").
                 WhenFound(f => SetLabel(f.label, f.ins)).Or
-                .By(instructions);
+                .By(instructions).Or
+                .By(comment).WhenFound(f => null);
            
             instructions.IsMadeUp.By(opCode).As("opcode").Followed.ByListOf(register).As("values").
                 ThatIs.SeparatedBy(",").WhenFound(f => this.instructionBuilder.BuildInstruction(f)).Or.
@@ -96,13 +100,13 @@ namespace DCPU16.Assembler
 
             IParser<object> parser = config.CreateParser();
             List<IInstruction> instructionList = (List<IInstruction>)parser.Parse(assembly);
-
+            instructionList = instructionList.Where(i => i != null).ToList();
             return ResolveLables(instructionList).ToArray();
         }
 
         private IEnumerable<ushort> ResolveLables(List<IInstruction> instructions)
         {
-            foreach (var instruction in instructions.Where(instruction => !instruction.IsResolved))
+            foreach (var instruction in instructions.Where(instruction =>!instruction.IsResolved))
             {
                 instruction.ResolveLables(instructions.ToArray());
             }

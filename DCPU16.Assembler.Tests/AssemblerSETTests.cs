@@ -115,6 +115,17 @@ namespace DCPU16.Assembler.Tests
 
             Assert.That(result[0], Is.EqualTo(0x61c1));
         }
+
+        [Test]
+        public void ShouldHandleComments()
+        {
+            var asm = @";meh9
+                        SET PC, POP";
+
+            var result = this.assembler.Assemble(asm);
+
+            Assert.That(result[0], Is.EqualTo(0x61c1));
+        }
     }
 }
 

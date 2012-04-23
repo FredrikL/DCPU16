@@ -37,8 +37,9 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Piglet">
-      <HintPath>..\packages\Piglet.1.1.0\lib\Piglet.dll</HintPath>
+    <Reference Include="Piglet, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Piglet.1.2.0\lib\net40\Piglet.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
