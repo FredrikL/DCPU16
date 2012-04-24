@@ -119,12 +119,14 @@ namespace DCPU16.Assembler.Tests
         [Test]
         public void ShouldHandleComments()
         {
-            var asm = @";meh9
-                        SET PC, POP";
+            var asm = @"; meh 9
+                        SET PC, POP ;foo
+                        SET PC, POP ;foo";
 
             var result = this.assembler.Assemble(asm);
 
             Assert.That(result[0], Is.EqualTo(0x61c1));
+            Assert.That(result[1], Is.EqualTo(0x61c1));
         }
     }
 }

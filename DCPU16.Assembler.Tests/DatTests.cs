@@ -45,5 +45,17 @@ namespace DCPU16.Assembler.Tests
 
             Assert.That(result[0], Is.EqualTo(0x1234));           
         }
+
+        [Test]
+        public void DatShouldSupportMultipleItems()
+        {
+            var assembly = "DAT 0x1234,\"C\" ,0xaaaa";
+
+            var result = this.assembler.Assemble(assembly);
+
+            Assert.That(result[0], Is.EqualTo(0x1234));
+            Assert.That(result[1], Is.EqualTo(0x0043));
+            Assert.That(result[2], Is.EqualTo(0xaaaa));
+        }
     }
 }

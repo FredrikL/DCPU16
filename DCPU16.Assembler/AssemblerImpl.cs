@@ -48,20 +48,20 @@ namespace DCPU16.Assembler
 
         public IInstruction ParseData(dynamic items)
         {
+            List<ushort> parts = new List<ushort>();
             foreach (dynamic item in items.values)
             {               
                 if(((IDictionary<String, object>)item).ContainsKey("String")) {
                     ushort[] x = GetAsUshorts(Encoding.ASCII.GetBytes(item.String));
-                    return new RawData(x);
+                    parts.AddRange(x);
                 }
 
                 if(((IDictionary<String, object>)item).ContainsKey("Binary")) {
                     var data = UInt16.Parse(item.Binary.Substring(2), NumberStyles.HexNumber);
-                    return new RawData(new ushort[]{data});
+                    parts.Add(data);
                 }
             }
-
-            throw new NotImplementedException("ParseData");
+            return new RawData(parts.ToArray());
         }
 
         public ushort[] Assemble(string assembly)
@@ -72,13 +72,11 @@ namespace DCPU16.Assembler
             SetupExpressions(config);
             var opCode = config.Expression();
             opCode.ThatMatches("SET|ADD|SUB|MUL|DIV|MOD|SHL|SHR|AND|BOR|XOR|IFE|IFN|IFG|IFB").AndReturns(f => opCodes[f]);
-
             
             var register = GetRegisterMap(config);
             var dataRules = DataParts(config);
 
-            var comment = config.Expression();
-            comment.ThatMatches(@";\w+").AndReturns(f => null);
+            config.Ignore(";[^\\n]+[\\n|\0]");
             
             var labelAnchor = config.Expression();
             labelAnchor.ThatMatches(@":\w+").AndReturns(f => f.Substring(1));
@@ -86,21 +84,19 @@ namespace DCPU16.Assembler
             var labelWrapper = config.Rule();
             labelWrapper.IsMadeUp.By(labelAnchor).As("label").Followed.By(instructions).As("ins").
                 WhenFound(f => SetLabel(f.label, f.ins)).Or
-                .By(instructions).Or
-                .By(comment).WhenFound(f => null);
+                .By(instructions);
            
             instructions.IsMadeUp.By(opCode).As("opcode").Followed.ByListOf(register).As("values").
                 ThatIs.SeparatedBy(",").WhenFound(f => this.instructionBuilder.BuildInstruction(f)).Or.
                 By("JSR").Followed.By(register).As("values").
                 WhenFound(f => this.instructionBuilder.BuildExtendedInstruction(0x01, f)).Or
-                .By("DAT").Followed.ByListOf(dataRules).As("values").
+                .By("DAT").Followed.ByListOf(dataRules).As("values").ThatIs.SeparatedBy(",").
                 WhenFound(f => ParseData(f));
 
             asm.IsMadeUp.ByListOf<IInstruction>(labelWrapper).As("Result").ThatIs.WhenFound(f =>  f.Result);
 
             IParser<object> parser = config.CreateParser();
             List<IInstruction> instructionList = (List<IInstruction>)parser.Parse(assembly);
-            instructionList = instructionList.Where(i => i != null).ToList();
             return ResolveLables(instructionList).ToArray();
         }
 
@@ -133,8 +129,7 @@ namespace DCPU16.Assembler
         private IRule GetRegisterMap(IFluentParserConfigurator config)
         {
             var register = config.Rule();           
-            label = config.Expression();
-            label.ThatMatches(@"\w+").AndReturns(f => f);
+            
 
             register.IsMadeUp.By(basicRegister).As("Name").WhenFound(f => this.valueMap[f.Name]).Or
                 .By(registerPointer).As("Name").WhenFound(f => (ushort)(this.valueMap[f.Name] + 0x8)).Or
@@ -157,6 +152,9 @@ namespace DCPU16.Assembler
 
             hex = config.Expression();
             hex.ThatMatches(@"0x[0-9a-fA-F]{1:4}").AndReturns(f => f);
+
+            label = config.Expression();
+            label.ThatMatches(@"[a-z]+").AndReturns(f => f);
         }
     }
 }

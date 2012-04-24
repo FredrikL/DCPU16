@@ -287,6 +287,13 @@
             </summary>
             <param name="p">expressions</param>
         </member>
+        <member name="M:Piglet.Parser.Configuration.Fluent.IFluentParserConfigurator.Ignore(System.String)">
+            <summary>
+            Ignores an expression. Text matching this regular expression will never be reported. This is suitable
+            for comments and stripping text.
+            </summary>
+            <param name="ignoreExpression">Regular expression to ignore</param>
+        </member>
         <member name="P:Piglet.Parser.Configuration.Fluent.IFluentParserConfigurator.QuotedString">
             <summary>
             Ready-made expression for quoted strings.
