@@ -11,7 +11,7 @@ namespace DCPU16.Assembler.Tests
     {
         private AssemblerImpl assembler;
 
-        [SetUp]
+        [TestFixtureSetUp]
         public void Setup()
         {
             this.assembler = new AssemblerImpl();
@@ -56,6 +56,17 @@ namespace DCPU16.Assembler.Tests
 
             Assert.That(result[0], Is.EqualTo(0x1151));
             Assert.That(result[1], Is.EqualTo(0x2000));
+        }
+
+         [Test]
+        public void ShouldHandleasdasdasdns()
+        {
+            var asm = "SUB A, [0x1000]";
+
+            var result = this.assembler.Assemble(asm);
+
+            Assert.That(result[0], Is.EqualTo(0x7803));
+            Assert.That(result[1], Is.EqualTo(0x1000));
         }
 
         [Test]
