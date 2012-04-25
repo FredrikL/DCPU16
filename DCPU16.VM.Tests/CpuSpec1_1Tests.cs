@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace DCPU16.VM.Tests
 {
     [TestFixture]
     public class CpuSpec1_1Tests
     {
-        // based on example code in 1.1 spec
-
         private Cpu cpu;
         private DefaultRegisters registers;
         private DefaultRam ram;

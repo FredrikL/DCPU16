@@ -2,13 +2,14 @@
 
 namespace DCPU16.VM
 {
-    public class Cpu
+    public class Cpu : ICpu
     {
         private ISkipValue skipValue = new DefaultSkipValue();
         private IRegisters registers;
         private IRam ram;
         private IDestinationProvider destinationProvider;
         private ISourceProvider sourceProvider;
+        private ICostCalculator costCalculator = new CostCalculator();
 
         private bool skipNext = false;
 
@@ -54,109 +55,119 @@ namespace DCPU16.VM
             return new Instruction(){a = a, b=b, instruction = instruction, raw = word};
         }
 
-        public void Run()
+        private int GetCost(Instruction instruction)
         {
-            while (true)
-            {                
-                if(skipNext)
-                {
-                    this.SkipNextInstruction();
-                    this.skipNext = false;
-                }
+            return this.costCalculator.CalculateCost(instruction);
+        }
 
-                var ins = GetInstruction();
+        public int Tick()
+        {
+            if (skipNext)
+            {
+                this.SkipNextInstruction();
+                this.skipNext = false;
+            }
 
-                switch (ins.instruction)
-                {
-                    case 0x0:
-                        switch(ins.a)
-                        {
-                            case 0x01:
-                                this.Jsr(ins.b);
-                                break;
-                            default:
+            var ins = GetInstruction();
+            int cost = GetCost(ins);
+
+            switch (ins.instruction)
+            {
+                case 0x0:
+                    switch (ins.a)
+                    {
+                        case 0x01:
+                            this.Jsr(ins.b);
+                            break;
+                        default:
 #if DEBUG
-                                // for testing, remove once full implementation is done                                
-                                return;
+                            // for testing, remove once full implementation is done                                
+                            return 0;
 #else
                                 break;
-#endif 
-                        }                                              
-                        break;
+#endif
+                    }
+                    break;
 
-                    case 0x1:
-                        this.Set(ins.a, ins.b);
-                        break;
+                case 0x1:
+                    this.Set(ins.a, ins.b);
+                    break;
 
-                    case 0x2:
-                        DoMathOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x + y), (x, y) => (ushort)((x + y) > 0xffff ? 0x0001 : 0x0000));
-                        break;
+                case 0x2:
+                    DoMathOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort) (x + y), (x, y) => (ushort) ((x + y) > 0xffff ? 0x0001 : 0x0000));
+                    break;
 
-                    case 0x3:
-                        DoMathOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x - y), (x, y) => (ushort)(x < y ? 0xffff : 0x0000));
-                        break;
+                case 0x3:
+                    DoMathOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort) (x - y), (x, y) => (ushort) (x < y ? 0xffff : 0x0000));
+                    break;
 
-                    case 0x4:
-                        DoMathOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x * y), (x, y) => (ushort)(((x * y) >> 16) & 0xffff));
-                        break;
+                case 0x4:
+                    DoMathOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort) (x*y), (x, y) => (ushort) (((x*y) >> 16) & 0xffff));
+                    break;
 
-                    case 0x5:
-                        DoMathOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x / y), (x, y) => (ushort)(((x << 16) / y) & 0xffff), (y) => y != 0, () => this.registers.OverFlow = 0);
-                        break;
+                case 0x5:
+                    DoMathOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort) (x/y), (x, y) => (ushort) (((x << 16)/y) & 0xffff), (y) => y != 0, () => this.registers.OverFlow = 0);
+                    break;
 
-                    case 0x6:
-                        DoMathOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x % y), (x, y) => 0, (y) => y != 0, () => 0);
-                        break;
+                case 0x6:
+                    DoMathOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort) (x%y), (x, y) => 0, (y) => y != 0, () => 0);
+                    break;
 
-                    case 0x7:
-                        DoMathOp(Tuple.Create(GetSource(ins.a)(), (ushort)ins.b), GetDestination(ins.a), (x, y) => (ushort)(x << y), (x, y) => (ushort)(((x << y) >> 16) & 0xffff));
-                        break;
+                case 0x7:
+                    DoMathOp(Tuple.Create(GetSource(ins.a)(), (ushort) ins.b), GetDestination(ins.a), (x, y) => (ushort) (x << y), (x, y) => (ushort) (((x << y) >> 16) & 0xffff));
+                    break;
 
-                    case 0x8:
-                        DoMathOp(Tuple.Create(GetSource(ins.a)(), (ushort)ins.b), GetDestination(ins.a), (x, y) => (ushort)(x >> y), (x, y) => (ushort)(((x << 16) >> y) & 0xffff));
-                        break;
+                case 0x8:
+                    DoMathOp(Tuple.Create(GetSource(ins.a)(), (ushort) ins.b), GetDestination(ins.a), (x, y) => (ushort) (x >> y), (x, y) => (ushort) (((x << 16) >> y) & 0xffff));
+                    break;
 
-                    case 0x9:
-                        DoBinaryOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x & y));
-                        break;
+                case 0x9:
+                    DoBinaryOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort) (x & y));
+                    break;
 
-                    case 0xa:
-                        DoBinaryOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x | y));
-                        break;
+                case 0xa:
+                    DoBinaryOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort) (x | y));
+                    break;
 
-                    case 0xb:
-                        DoBinaryOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort)(x ^ y));
-                        break;
+                case 0xb:
+                    DoBinaryOp(ResolveSources(ins.a, ins.b), GetDestination(ins.a), (x, y) => (ushort) (x ^ y));
+                    break;
 
-                    case 0xc:
-                        ShouldSkipNextIf(ResolveSources(ins.a, ins.b), (x, y) => (x != y));
-                        break;
+                case 0xc:
+                    ShouldSkipNextIf(ResolveSources(ins.a, ins.b), (x, y) => (x != y));
+                    break;
 
-                    case 0xd:
-                        ShouldSkipNextIf(ResolveSources(ins.a, ins.b), (x, y) => (x == y));
-                        break;
+                case 0xd:
+                    ShouldSkipNextIf(ResolveSources(ins.a, ins.b), (x, y) => (x == y));
+                    break;
 
-                    case 0xe:
-                        ShouldSkipNextIf(ResolveSources(ins.a, ins.b), (x, y) => (x <= y));
-                        break;
+                case 0xe:
+                    ShouldSkipNextIf(ResolveSources(ins.a, ins.b), (x, y) => (x <= y));
+                    break;
 
-                    case 0xf:
-                        ShouldSkipNextIf(ResolveSources(ins.a, ins.b), (x, y) => (x & y) == 0);
-                        break;
+                case 0xf:
+                    ShouldSkipNextIf(ResolveSources(ins.a, ins.b), (x, y) => (x & y) == 0);
+                    break;
 
-                    default:
-                        throw new NotImplementedException("Run");
-                }
-                if (!this.registers.ProgramCounterManipulated)
-                {
-                    // in case we're using jsr don't increment programcounter here
-                    // it's at the correct position
-                    SkipNextInstruction();
-                    this.registers.ProgramCounter++;                    
-                }
-                else
-                    this.registers.ProgramCounterManipulated = false;
+                default:
+                    throw new NotImplementedException("Run");
             }
+            if (!this.registers.ProgramCounterManipulated)
+            {
+                // in case we're using jsr don't increment programcounter here
+                // it's at the correct position
+                SkipNextInstruction();
+                this.registers.ProgramCounter++;
+            }
+            else
+                this.registers.ProgramCounterManipulated = false;
+
+            return cost;
+        }
+
+        public void Run()
+        {
+            while (this.Tick() > 0) ;
         }
 
         private Tuple<ushort, ushort> ResolveSources(byte a, byte b)
