@@ -40,10 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CostCalculator.cs" />
     <Compile Include="Cpu.cs" />
     <Compile Include="DefaultRegisters.cs" />
     <Compile Include="DefaultSkipValue.cs" />
     <Compile Include="DestinationProvider.cs" />
+    <Compile Include="ICostCalculator.cs" />
     <Compile Include="ICpu.cs" />
     <Compile Include="IDestinationProvider.cs" />
     <Compile Include="Instruction.cs" />
