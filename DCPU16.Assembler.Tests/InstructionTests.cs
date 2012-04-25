@@ -106,7 +106,7 @@ namespace DCPU16.Assembler.Tests
 
             var result = this.assembler.Assemble(asm).ToArray();
 
-            //Assert.That(result.Length, Is.EqualTo(28));
+            Assert.That(result.Length, Is.EqualTo(28));
 
         //0000: 7c01 0030 7de1 1000 0020 7803 1000 c00d
         //0008: 7dc1 001a a861 7c01 2000 2161 2000 8463

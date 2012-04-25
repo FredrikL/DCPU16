@@ -108,8 +108,7 @@ namespace DCPU16.Assembler
 
             asm.IsMadeUp.ByListOf<IInstruction>(labelWrapper).As("Result").ThatIs.WhenFound(f => f.Result);
 
-            IParser<object> parser = config.CreateParser();
-            return parser;
+            return config.CreateParser();            
         }
 
         private IEnumerable<ushort> ResolveLables(List<IInstruction> instructions)
