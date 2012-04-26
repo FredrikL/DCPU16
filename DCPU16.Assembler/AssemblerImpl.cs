@@ -63,13 +63,19 @@ namespace DCPU16.Assembler
                     var data = UInt16.Parse(item.Binary.Substring(2), NumberStyles.HexNumber);
                     parts.Add(data);
                 }
+
+                if (((IDictionary<String, object>)item).ContainsKey("Digit"))
+                {
+                    var data = UInt16.Parse(item.Digit);
+                    parts.Add(data);
+                }
             }
             return new RawData(parts.ToArray());
         }
 
         public ushort[] Assemble(string assembly)
         {            
-            List<IInstruction> instructionList = (List<IInstruction>)parser.Parse(assembly);
+            List<IInstruction> instructionList = (List<IInstruction>)parser.Parse(assembly.ToUpper());
             return ResolveLables(instructionList).ToArray();
         }
 
@@ -132,7 +138,8 @@ namespace DCPU16.Assembler
             var datarules = config.Rule();
 
             datarules.IsMadeUp.By(config.QuotedString).As("String").WhenFound(f => f).Or
-                .By(hex).As("Binary").WhenFound(f => f);
+                .By(hex).As("Binary").WhenFound(f => f).Or
+                .By(digit).As("Digit").WhenFound(f => f);
 
             return datarules;
         }        
@@ -165,7 +172,7 @@ namespace DCPU16.Assembler
             digit.ThatMatches(@"\d|1\d|0\d").AndReturns(f =>f);
 
             hex = config.Expression();
-            hex.ThatMatches(@"0x[0-9a-fA-F]{1:4}").AndReturns(f => f);
+            hex.ThatMatches(@"0[xX][0-9a-fA-F]{1:4}").AndReturns(f => f);
 
             label = config.Expression();
             label.ThatMatches(@"[a-zA-Z]\w+").AndReturns(f => f);
