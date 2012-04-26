@@ -37,6 +37,19 @@ namespace DCPU16.Assembler
                     {
                         this.additional[0] = (ushort) pos;
                         this.IsResolved = true;
+                    } else if(this.additional.Length== 2)
+                    {
+                        if (this.labels.First() == instructions[i].Label)
+                        {
+                            this.additional[0] = (ushort)pos;
+                            this.labels[0] = string.Empty;
+                        }
+                        if(this.labels[1] == instructions[i].Label)
+                        {
+                            this.additional[1] = (ushort) pos;
+                            this.labels[1] = string.Empty;
+                        }
+                        this.IsResolved = this.labels.All(s => s == string.Empty);
                     }
                 }
                 pos += instructions[i].Size;

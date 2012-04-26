@@ -261,6 +261,61 @@ namespace DCPU16.Assembler.Tests
         }
 
         [Test]
+        public void DatCanHaveLabels()
+        {
+            var assembly = @"
+     SET A, A
+:lol DAT 0x1234,""C"" ,0xaaaa
+     SET PC, lol";
+
+            var result = this.assembler.Assemble(assembly);
+
+            Assert.That(result[0], Is.EqualTo(0x0001));
+            Assert.That(result[1], Is.EqualTo(0x1234));
+            Assert.That(result[2], Is.EqualTo(0x0043));
+            Assert.That(result[3], Is.EqualTo(0xaaaa));
+            Assert.That(result[4], Is.EqualTo(0x7dc1));
+            Assert.That(result[5], Is.EqualTo(0x0001));
+        }
+
+        [Test]
+        public void HandleLableInSecondPosition()
+        {
+            var assembly = @"
+     SET A, A
+:lol DAT 0x1234,""C"" ,0xaaaa
+     SET [0x8000+I], [lol+i]";
+
+            var result = this.assembler.Assemble(assembly);
+
+            Assert.That(result[0], Is.EqualTo(0x0001));
+            Assert.That(result[1], Is.EqualTo(0x1234));
+            Assert.That(result[2], Is.EqualTo(0x0043));
+            Assert.That(result[3], Is.EqualTo(0xaaaa));
+            Assert.That(result[4], Is.EqualTo(0x5961));
+            Assert.That(result[5], Is.EqualTo(0x8000));
+            Assert.That(result[6], Is.EqualTo(0x0001));
+        }
+        [Test]
+        public void ShouldHandleLabelsInBothPositions()
+        {
+            var assembly = @"
+     SET A, A
+:lol DAT 0x1234,""C"" ,0xaaaa
+     SET [lol+I], [lol+i]";
+
+            var result = this.assembler.Assemble(assembly);
+
+            Assert.That(result[0], Is.EqualTo(0x0001));
+            Assert.That(result[1], Is.EqualTo(0x1234));
+            Assert.That(result[2], Is.EqualTo(0x0043));
+            Assert.That(result[3], Is.EqualTo(0xaaaa));
+            Assert.That(result[4], Is.EqualTo(0x5961));
+            Assert.That(result[5], Is.EqualTo(0x0001));
+            Assert.That(result[6], Is.EqualTo(0x0001));
+        }
+
+        [Test, Ignore ]
         public void HelloWorld()
         {
             var asm = @"; Assembler test for DCPU
@@ -284,7 +339,42 @@ namespace DCPU16.Assembler.Tests
 
             var result = this.assembler.Assemble(asm);
 
-            Assert.That(result.Length, Is.GreaterThan(0));
+            //Assert.That(result.Length, Is.EqualTo(0x85c3));
+
+            Assert.That(result[0], Is.EqualTo(0x7c01));
+            Assert.That(result[1], Is.EqualTo(0xbeef));
+            Assert.That(result[2], Is.EqualTo(0x01e1));
+            Assert.That(result[3], Is.EqualTo(0x1000));
+            Assert.That(result[4], Is.EqualTo(0x780d));
+            Assert.That(result[5], Is.EqualTo(0x1000));
+            Assert.That(result[6], Is.EqualTo(0x7dc1));
+            Assert.That(result[7], Is.EqualTo(0x0021)); //0x21
+            Assert.That(result[8], Is.EqualTo(0x8061));
+            Assert.That(result[9], Is.EqualTo(0x816c));
+            Assert.That(result[10], Is.EqualTo(0x00da));
+            Assert.That(result[11], Is.EqualTo(0x7dc1));
+            Assert.That(result[12], Is.EqualTo(0x0021));
+            Assert.That(result[13], Is.EqualTo(0x5961));
+            Assert.That(result[14], Is.EqualTo(0x8000));
+            Assert.That(result[15], Is.EqualTo(0x00da));
+            Assert.That(result[16], Is.EqualTo(0x8462));
+            Assert.That(result[17], Is.EqualTo(0x7dc1));
+            Assert.That(result[18], Is.EqualTo(0x0009));
+            Assert.That(result[19], Is.EqualTo(0x00da));
+            Assert.That(result[20], Is.EqualTo(0x0048));
+            Assert.That(result[21], Is.EqualTo(0x0065));
+            Assert.That(result[22], Is.EqualTo(0x006c));
+            Assert.That(result[23], Is.EqualTo(0x006c));
+            Assert.That(result[24], Is.EqualTo(0x006f));
+            Assert.That(result[25], Is.EqualTo(0x0020));
+            Assert.That(result[26], Is.EqualTo(0x0077));
+            Assert.That(result[27], Is.EqualTo(0x006f));
+            Assert.That(result[28], Is.EqualTo(0x0072));
+            Assert.That(result[29], Is.EqualTo(0x006c));
+            Assert.That(result[30], Is.EqualTo(0x0064));
+            Assert.That(result[31], Is.EqualTo(0x0021));
+            Assert.That(result[32], Is.EqualTo(0x0000));
+            Assert.That(result[33], Is.EqualTo(0x85c3));
         }
     }
 }
