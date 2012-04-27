@@ -65,6 +65,7 @@ namespace DCPU16.VM
             if (skipNext)
             {
                 this.SkipNextInstruction();
+                this.registers.ProgramCounter++;
                 this.skipNext = false;
             }
 
