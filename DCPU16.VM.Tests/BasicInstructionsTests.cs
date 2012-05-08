@@ -248,5 +248,18 @@ namespace DCPU16.VM.Tests
 
             Assert.That(this.registers.A, Is.EqualTo(0x1));
         }
+
+        [Test]
+        public void SubProgramCounterShouldBeCorrect()
+        {
+
+            ushort[] program = { 0x85c3 };
+
+            this.cpu.LoadProgram(program);
+
+            this.cpu.Tick();
+
+            Assert.That(this.registers.ProgramCounter, Is.EqualTo(0));
+        }
     }
 }

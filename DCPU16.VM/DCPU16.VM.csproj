@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="CostCalculator.cs" />
     <Compile Include="Cpu.cs" />
+    <Compile Include="DefaultOffsetProvider.cs" />
     <Compile Include="DefaultRegisters.cs" />
     <Compile Include="DefaultSkipValue.cs" />
     <Compile Include="DestinationProvider.cs" />
@@ -49,6 +50,7 @@
     <Compile Include="ICpu.cs" />
     <Compile Include="IDestinationProvider.cs" />
     <Compile Include="Instruction.cs" />
+    <Compile Include="IOffsetProvider.cs" />
     <Compile Include="IRam.cs" />
     <Compile Include="IRegisters.cs" />
     <Compile Include="ISkipValue.cs" />

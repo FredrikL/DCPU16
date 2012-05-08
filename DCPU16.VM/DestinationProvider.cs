@@ -3,10 +3,11 @@ using System;
 namespace DCPU16.VM
 {
     public class DestinationProvider : IDestinationProvider
-    {
-        private ISkipValue skipValue = new DefaultSkipValue();
+    {        
         private IRegisters registers;
         private IRam ram;
+
+        private IOffsetProvider offsetProvider = new DefaultOffsetProvider();
 
         public DestinationProvider(IRegisters registers, IRam ram)
         {
@@ -14,12 +15,12 @@ namespace DCPU16.VM
             this.ram = ram;
         }
 
-        public Action<ushort> GetDestination(byte value)
+        public Action<ushort> GetDestination(byte value, Instruction instruction)
         {
             ushort val;
-            ushort offset = 0;
-            if (this.skipValue.SkipValue(value))
-                offset = 1;
+
+            short offset = this.offsetProvider.GetOffset(instruction);
+
             switch (value)
             {
                 case 0x0:

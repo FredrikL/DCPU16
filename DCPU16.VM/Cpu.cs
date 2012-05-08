@@ -13,6 +13,8 @@ namespace DCPU16.VM
 
         private bool skipNext = false;
 
+        private Instruction currentInstruction;
+
         public Cpu(IRegisters registers, IRam ram)
         {
             this.registers = registers;
@@ -25,15 +27,7 @@ namespace DCPU16.VM
         {
             this.registers.Reset();
             program.CopyTo(this.ram.Ram, 0);
-        }
-
-        private void SkipNextInstruction()
-        {
-            var ins = GetInstruction();
-            // determine if we should advance programcounter 1 or 2 additional steps
-            if (this.skipValue.SkipValue(ins.a)) this.registers.ProgramCounter++;
-            if (this.skipValue.SkipValue(ins.b)) this.registers.ProgramCounter++;
-        }
+        }        
 
         private Func<ushort> GetSource(byte value, int offset  = 0)
         {
@@ -42,17 +36,21 @@ namespace DCPU16.VM
 
         private Action<ushort> GetDestination(byte value)
         {
-            return this.destinationProvider.GetDestination(value);
+            return this.destinationProvider.GetDestination(value, this.currentInstruction);
         }
 
         private Instruction GetInstruction()
         {
-            ushort word = this.ram.Ram[this.registers.ProgramCounter];
+            ushort programCounter = this.registers.ProgramCounter;
+            ushort word = this.ram.Ram[this.registers.ProgramCounter++];
             byte instruction = (byte)(0xf & word);
             byte a = (byte)(0x3f & (word >> 0x4));
             byte b = (byte)(0x3f & (word >> 0xa));
-   
-            return new Instruction(){a = a, b=b, instruction = instruction, raw = word};
+
+            if (this.skipValue.SkipValue(a)) this.registers.ProgramCounter++;
+            if (this.skipValue.SkipValue(b)) this.registers.ProgramCounter++;
+
+            return new Instruction(){a = a, b=b, instruction = instruction, raw = word, position =  programCounter};
         }
 
         private int GetCost(Instruction instruction)
@@ -64,12 +62,16 @@ namespace DCPU16.VM
         {
             if (skipNext)
             {
-                this.SkipNextInstruction();
-                this.registers.ProgramCounter++;
+                GetInstruction();
                 this.skipNext = false;
             }
 
+#if DEBUG
+            if (this.ram.Ram[this.registers.ProgramCounter] == 0) return 0;
+#endif
+
             var ins = GetInstruction();
+            this.currentInstruction = ins;
             int cost = GetCost(ins);
 
             switch (ins.instruction)
@@ -81,12 +83,7 @@ namespace DCPU16.VM
                             this.Jsr(ins.b);
                             break;
                         default:
-#if DEBUG
-                            // for testing, remove once full implementation is done                                
-                            return 0;
-#else
-                                break;
-#endif
+                            break;
                     }
                     break;
 
@@ -153,15 +150,6 @@ namespace DCPU16.VM
                 default:
                     throw new NotImplementedException("Run");
             }
-            if (!this.registers.ProgramCounterManipulated)
-            {
-                // in case we're using jsr don't increment programcounter here
-                // it's at the correct position
-                SkipNextInstruction();
-                this.registers.ProgramCounter++;
-            }
-            else
-                this.registers.ProgramCounterManipulated = false;
 
             return cost;
         }
@@ -173,14 +161,14 @@ namespace DCPU16.VM
 
         private Tuple<ushort, ushort> ResolveSources(byte a, byte b)
         {
-            ushort skipcount = 0;
-            if (this.skipValue.SkipValue(a))
-                skipcount++;
-            var aVal = GetSource(a, skipcount)();
+            short skipcount = 0;            
             if (this.skipValue.SkipValue(b))
-                skipcount++;
+                skipcount--;
             var bVal = GetSource(b, skipcount)();
 
+            if (this.skipValue.SkipValue(a))
+                skipcount--;
+            var aVal = GetSource(a, skipcount)();
             return Tuple.Create(aVal, bVal);
         }
 
@@ -217,9 +205,9 @@ namespace DCPU16.VM
 
         private void Jsr(byte a)
         {
-            ushort skipcount = 0;
+            short skipcount = 0;
             if (this.skipValue.SkipValue(a))
-                skipcount++;
+                skipcount--;
             var value = GetSource(a, skipcount)();
             this.Push((ushort)(this.registers.ProgramCounter + skipcount + 1)); // push location of next instruction
             this.registers.ProgramCounter = value;
@@ -228,13 +216,11 @@ namespace DCPU16.VM
 
         private void Set(byte a, byte b)
         {
-            ushort skipcount = 0;
-            if (this.skipValue.SkipValue(a))
-                skipcount++;
+            short skipcount = 0;            
             if (this.skipValue.SkipValue(b))
-                skipcount++;
+                skipcount--;
             var source = GetSource(b, skipcount);
-
+            
             var dest = GetDestination(a);
             dest(source());
         }
